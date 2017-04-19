@@ -47,8 +47,10 @@ int get_random_number(int min, int max);
 int rdrand_flag;
 int check_buffer_open();
 int check_buffer_for_item();
+void print_buf();
 int ccounter=0;
 int pcounter=0;
+int buffer_size = 0; 
 
 int main( int argc, char *argv[]){
 	
@@ -59,12 +61,10 @@ int main( int argc, char *argv[]){
 	
 	int number_of_threads = atoi( argv[1] );
 
-	printf("before arrays number of threads is: %d\n", number_of_threads);	
 	pthread_t *prod_threads;
 	prod_threads = malloc(sizeof(pthread_t)*number_of_threads);
 	pthread_t *cons_threads;
 	cons_threads = malloc(sizeof(pthread_t)*number_of_threads);
-	printf("after arrays\n");	
 	
 	int i;
 		
@@ -86,24 +86,18 @@ int main( int argc, char *argv[]){
 	pthread_cond_init(&full, NULL);
 	pthread_cond_init(&empty, NULL);
 
-	printf("REAHCED\n")	;
 	for(i = 0; i < number_of_threads; i++){
-	
-		//pthread_t producer_thread, consumer_thread;
-		//prod_threads[i] = producer_thread;
-		//cons_threads[i] = consumer_thread;
 		pthread_create(&prod_threads[i], NULL, produce, NULL);
-		printf("THIS IS PRINTING\n");
 		pthread_create(&cons_threads[i], NULL, consume, NULL);
-
-		printf("REACHED\n");
 	}
 
 	for(i = 0; i < number_of_threads; i++){
 		pthread_join(prod_threads[i], NULL);
 		pthread_join(cons_threads[i], NULL);
 	}
-	
+
+	//print function for debugging
+	//print_buf();	
 		
 			
 	return 0;
@@ -124,11 +118,13 @@ void* produce(void *data){
 	int buffer_check = check_buffer_open();
 	while(buffer_check == -1){
 		pthread_cond_wait(&full, &my_mutex);	
-		buffer_check = check_buffer_open();	
+		buffer_check = check_buffer_open();
+			
 	}
 	struct buffer_item tmp = make_item();
 	printf("PRODUCER%d: adding item with num: %d and wait: %d\n", num, tmp.num, tmp.wait);
-	buffer[buffer_check] = tmp;	
+	buffer[buffer_check] = tmp;
+	buffer_size++;	
 	pthread_cond_signal(&empty);
 	pthread_mutex_unlock(&my_mutex);	
 	pthread_exit(0);
@@ -150,11 +146,12 @@ void* consume(void *data){
 	int temp = buffer[buffer_check].num;
 	int time = buffer[buffer_check].wait;
 	buffer[buffer_check].num = -1;
-	
+	buffer[buffer_check].wait = -1;
+	buffer_size--;
 	pthread_cond_signal(&full);
 	pthread_mutex_unlock(&my_mutex);
 	printf("CONSUMER%d: waiting %d seconds to consume %d\n", num, time, temp);
-	sleep(buffer[buffer_check].wait);	
+	sleep(time);	
 	printf("CONSUMER%d: consuming number %d\n", num, temp);
 	pthread_exit(0);	
 }
@@ -171,11 +168,9 @@ int get_random_number(int min, int max){
 
 	uint64_t arand;
 	//retry for 10 times in case rdrand was inturrupted
-			 	
 	int success = 1;
 	int attempt_limit_exceeded = -1;
 	int attempt_limit = 10;
-
 	int i;
 	for(i = 0; i < attempt_limit; i++){
 		//if rdrand64_step returned a usable random value
@@ -186,7 +181,6 @@ int get_random_number(int min, int max){
 				return (arand % (uint64_t)(max - min + 1)) + min;
 		}  
 	}
-	
 	//this will return -1 if rdrand failed
 	return attempt_limit_exceeded;
 	
@@ -202,7 +196,8 @@ int check_buffer_open(){
 			return i;  
 	}
 	return -1;
-}
+}//end check buffer for available slot
+
 int check_buffer_for_item(){
 	int i;
 	for(i = 0; i < MAX_SIZE; i++){
@@ -210,7 +205,7 @@ int check_buffer_for_item(){
 			return i;  
 	}
 	return -1;
-}
+}//end check buffer for item
 
 
 int check_rdrand(){
@@ -219,9 +214,7 @@ int check_rdrand(){
 	unsigned int ebx;
 	unsigned int ecx;
 	unsigned int edx;
-
 	eax = 0x01;
-
 	__asm__ __volatile__(
 				"cpuid;"
 				: "=a"(eax), "=b"(ebx), "=c"(ecx), "=d"(edx)
@@ -234,5 +227,11 @@ int check_rdrand(){
 	else{
 		return 0;
 	}
-
 }//end check_rdrand
+
+void print_buf(){
+	int i;
+	for(i = 0; i < MAX_SIZE; i++){
+		printf("Buffer[%d]: num: %d wait: %d\n", i, buffer[i].num, buffer[i].wait);
+	}
+}
