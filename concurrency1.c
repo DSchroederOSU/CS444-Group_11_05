@@ -65,7 +65,7 @@ static int mti=N+1;
 
 int main( int argc, char *argv[]){
 
-	if(argc > 2){ 
+	if(argc > 2 || argc < 2){ 
 		printf("Usage: [executable] [(int) NumThreads]\n");
 		return 1;
 	}
