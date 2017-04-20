@@ -65,11 +65,6 @@ static int mti=N+1;
 
 int main( int argc, char *argv[]){
 
-	int k;
-	for(k = 0; k < 20; k++){
-		printf("Random number: %d\n", get_random_number(2, 9));
-	}
-	return 0;	
 	if(argc > 2){ 
 		printf("Usage: [executable] [(int) NumThreads]\n");
 		return 1;
@@ -201,10 +196,10 @@ int get_random_number(int min, int max){
 		return attempt_limit_exceeded;
 	}
 	else{//use mt19937
-		printf("USING OTHER RANDOM\n");
-		int rand = (int)genrand_int32();
-		printf("RANDOM NUMBER IS: %d\n", rand);
-		return rand;
+		if(min == -1 && max == -1)
+				return (int) genrand_int32();
+		else
+				return (genrand_int32() % (uint64_t)(max - min + 1)) + min;
 	}
 	
 				
