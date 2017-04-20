@@ -49,8 +49,8 @@ struct buffer_item buffer[MAX_SIZE];
 //functions
 struct buffer_item make_item();
 int check_rdrand();
-void* produce(void *data);
-void* consume(void *data);
+void* produce(void *);
+void* consume(void *);
 int get_random_number(int min, int max);
 int rdrand_flag;
 int check_buffer_open();
@@ -71,9 +71,10 @@ int main( int argc, char *argv[]){
 	}
 	
 	int number_of_threads = atoi( argv[1] );
-
+	
 	pthread_t *prod_threads;
 	prod_threads = malloc(sizeof(pthread_t)*number_of_threads);
+
 	pthread_t *cons_threads;
 	cons_threads = malloc(sizeof(pthread_t)*number_of_threads);
 	
@@ -117,7 +118,7 @@ int main( int argc, char *argv[]){
 //wait a random amount of time 3-7 seconds,
 //then add item to buffer
 //if buffer is full, block until consumer removes an item
-void* produce(void *data){
+void* produce(void *d){
 	int num = pcounter;
 	pcounter++;	
 	int wait_to_produce = get_random_number(3,7);
@@ -144,7 +145,8 @@ void* produce(void *data){
 //Sleep for the amount of time in buffer_item->wait
 //then print the number in buffer_item->num
 //if buffer is empty, block until producer adds an item
-void* consume(void *data){
+void* consume(void *d){
+
 
 	int num = ccounter;
 	ccounter++;
