@@ -27,7 +27,7 @@
 \usepackage{hyperref}
 \usepackage{geometry}
 
-\def\name{Group 11-05}
+\def\name{D. Kevin McGrath}
 
 %pull in the necessary preamble matter for pygments output
 
@@ -36,9 +36,9 @@
   colorlinks = true,
   urlcolor = black,
   pdfauthor = {\name},
-  pdfkeywords = {cs444},
-  pdftitle = {CS 444 Assignment I: Getting Acquainted},
-  pdfsubject = {CS 444 Assignment 1},
+  pdfkeywords = {cs311 ``operating systems'' files filesystem I/O},
+  pdftitle = {CS 311 Project 1: UNIX File I/O},
+  pdfsubject = {CS 311 Project 1},
   pdfpagemode = UseNone
 }
 
@@ -179,7 +179,7 @@ This document is a summary of Assignment 1 for CS 444 Operating Systems II at Or
 \section{Version Control  Log}
 \bigskip
 
-\noindent\begin{tabular}{l l l}\textbf{Detail} & \textbf{Author} & \textbf{Description}\\\hline
+\begin{tabular}{l l l}\textbf{Detail} & \textbf{Author} & \textbf{Description}\\\hline
 \href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/6fc0cad45a2a515f54c120fa6d411cbb62a0eed5}{6fc0cad} & DSchroederOSU & Initial commit\\\hline
 \href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/237aed09afe1e61e9421f419164f4d41387adddd}{237aed0} & DSchroederOSU & Added assignment 1 folder and starter file\\\hline
 \href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/2c475d7e15d1a54406c275a2a27c5df472c46ded}{2c475d7} & DSchroederOSU & added concurrency 1 file\\\hline
@@ -187,7 +187,7 @@ This document is a summary of Assignment 1 for CS 444 Operating Systems II at Or
 \href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/d862edec54dd0eb51bdde6e26337315a2675d434}{d862ede} & DSchroederOSU & progress, got rdrand to work\\\hline
 \href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/a134adaeeff0b0ebc7bc662d809edc973ab6f841}{a134ada} & DSchroederOSU & finished concurrency logic with two threads\\\hline
 \href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/7096e2f214d8f164dcf02c58d8924f903281e867}{7096e2f} & DSchroederOSU & DONE I THINK\\\hline
-\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/29c5440b4d14c3656d11c907e8794f6f08d98897}{29c5440} & DSchroederOSU & This works for n threads, there was a bug that would not clear the buffer space once consumed\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/29c5440b4d14c3656d11c907e8794f6f08d98897}{29c5440} & DSchroederOSU & This works for n threads, there was a bug last time that would not clear the buffer space once consumed\\\hline
 \href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/c6ed2db4aab53f542abd8a00c05c9cf7953d9712}{c6ed2db} & ozarowib & recitation program\\\hline
 \href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/ce1d4cd2a712b1dfed27d304539fd552d15c4c6c}{ce1d4cd} & DSchroederOSU & added second random generator\\\hline
 \href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/870a6cf75e9cf205425b40b0fd90a21bece56299}{870a6cf} & DSchroederOSU & Merge branch 'master' of https://github.com/DSchroederOSU/CS444-Group\_11\_05\\\hline
@@ -199,24 +199,7 @@ This document is a summary of Assignment 1 for CS 444 Operating Systems II at Or
 \href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/bafbb7390e8525a17d2ad32ccd003c800ed0b4f0}{bafbb73} & Daniel Schroeder & ahaha\\\hline
 \href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/d8ae437d3f4dffe4287eab3471225d489f16af0a}{d8ae437} & ozarowib & conformed to class style guide\\\hline
 \href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/c7bf34a5a0bdc36bfc9815bdf012847cb9b6b3da}{c7bf34a} & ozarowib & IEEEtran working, updated Makefile\\\hline\end{tabular}
-\bigskip
 
 \section{Work Log}
-\bigskip
-
-\begin{itemize}
-\item Brian and Daniel created group directory on os-class at recitation April 11th at 11:00am
-\item Brian ran script for setting folder permissions on Friday April 14th
-\item Daniel and Brian met in OSU Library at 1:50 pm on Monday April 17th. Worked until 3:30pm on initial code and write-up document
-\item Throughout Wednesday April 19th Daniel developed the initial version of the homework concurrency program while Brian wrote the delayed concurrency program from Tuesday's recitation; Brian reviewed Daniel's code Wednesday evening
-\item Brian and Daniel met afternoon of Thursday April 20th to review and complete concurrency1.c code; found compile errors and rdrand error when run on os-class
-\item Daniel and Brian implemented mt19937 function into concurrency1.c evening of April 20th so random numbers could be generated on os-class and did final debugging
-\item Throughout Friday April 21st Daniel and Brian worked on the \LaTeX\ Makefile and formatting
-\item Brian and Daniel finished the assignment write-up in a Google Doc
-\item Brian revised the concurrency1.c code to follow the class style guidelines
-\item Brian transferred the content from the Google Doc write-up to the \LaTeX\ file
-\item Brian added IEEEtran.cls file to directory so proper formatting could be applied
-\item Daniel and Brian pushed final changes to GitHub and prepared tarball for submission on TEACH
-\end{itemize}
 
 \end{document}
