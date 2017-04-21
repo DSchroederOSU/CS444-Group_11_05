@@ -121,6 +121,22 @@ This document is a summary of Assignment 1 for CS 444 Operating Systems II at Or
 \medskip
 
 \noindent Our concurrency solution implemented pthreads and multithreading to solve a producer/consumer style problem. The problem: with a buffer of size 32, have producers add items (structs with int value number and int value wait time) to the buffer. The producers must wait a random number of seconds (time to produce) and also wait if the buffer is full. The consumers take the items from the buffer, sleeping for the time given in the buffer item struct's wait value, and blocking if the buffer is empty. To do this we implemented mutexes, pthread conditions, and concurrent programming.\par
+
+\noindent (Brian and Daniel) Created group directory at recitation April 11th at 11:00am
+(Brian) Ran script for folder permissions on Friday April 14th.
+Daniel and Brian met in OSU Library at 1:50 pm on Monday April 17th. Worked until 3:30pm, 
+(Daniel) Committed the concurrency1.c file to github and pushed changes on Thursday April 20th.
+(Daniel and Brian) Tried to run concurrency1.c on os-class, found compile errors and rdrand error Thursday, April 20th.
+(Daniel and Brian) Implemented mt19937 function into concurrency1.c so that random numbers could be generated on os-class. Pushed to github. Thursday, April 20th.
+(Daniel and Brian) Worked on LaTex Makefile and formatting for Assignment1 repo
+(Brian) Transposed google doc file into LaTex format for submission Friday, April 21st.
+(Brian) Reconfigured Makefile to compile both LaTex submission file and concurrency1.c file Friday, April 21st.
+(Daniel) Wrote abstract and answered concurrency write-up questions for submission Friday, April 21st.
+(Brian) Reformatted concurrency1.c according to kernel submission format guide Friday, April 21st.
+(Brian) Provided class file for Tex styling Friday, April 21st.
+(Daniel and Brian) Pushed final changes to github for submission Friday, April 21st.
+
+
 \medskip
 
 \medskip
@@ -201,5 +217,20 @@ This document is a summary of Assignment 1 for CS 444 Operating Systems II at Or
 \href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/c7bf34a5a0bdc36bfc9815bdf012847cb9b6b3da}{c7bf34a} & ozarowib & IEEEtran working, updated Makefile\\\hline\end{tabular}
 
 \section{Work Log}
+\noindent
+(Brian and Daniel) Created group directory at recitation April 11th at 11:00am
+(Brian) Ran script for folder permissions on Friday April 14th.
+Daniel and Brian met in OSU Library at 1:50 pm on Monday April 17th. Worked until 3:30pm, 
+(Daniel) Committed the concurrency1.c file to github and pushed changes on Thursday April 20th.
+(Daniel and Brian) Tried to run concurrency1.c on os-class, found compile errors and rdrand error Thursday, April 20th.
+(Daniel and Brian) Implemented mt19937 function into concurrency1.c so that random numbers could be generated on os-class. Pushed to github. Thursday, April 20th.
+(Daniel and Brian) Worked on LaTex Makefile and formatting for Assignment1 repo
+(Brian) Transposed google doc file into LaTex format for submission Friday, April 21st.
+(Brian) Reconfigured Makefile to compile both LaTex submission file and concurrency1.c file Friday, April 21st.
+(Daniel) Wrote abstract and answered concurrency write-up questions for submission Friday, April 21st.
+(Brian) Reformatted concurrency1.c according to kernel submission format guide Friday, April 21st.
+(Brian) Provided class file for Tex styling Friday, April 21st.
+(Daniel and Brian) Pushed final changes to github for submission Friday, April 21st.
+\par
 
 \end{document}
