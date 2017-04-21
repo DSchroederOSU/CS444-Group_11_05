@@ -1,0 +1,205 @@
+\documentclass[10pt,letterpaper,draftclsnofoot,onecolumn]{IEEEtran}
+
+\usepackage{graphicx}                                        
+\usepackage{amssymb}                                         
+\usepackage{amsmath}                                         
+\usepackage{amsthm}                                          
+
+\usepackage{alltt}                                           
+\usepackage{float}
+\usepackage{color}
+\usepackage{url}
+
+\usepackage{balance}
+\usepackage[TABBOTCAP, tight]{subfigure}
+\usepackage{enumitem}
+\usepackage{pstricks, pst-node}
+
+\usepackage{geometry}
+\geometry{textheight=8.5in, textwidth=6in, margin=0.75in}
+\usepackage[singlespacing]{setspace}
+
+\usepackage{hyperref}
+
+\newcommand{\cred}[1]{{\color{red}#1}}
+\newcommand{\cblue}[1]{{\color{blue}#1}}
+
+\usepackage{hyperref}
+\usepackage{geometry}
+
+\def\name{D. Kevin McGrath}
+
+%pull in the necessary preamble matter for pygments output
+
+%% The following metadata will show up in the PDF properties
+\hypersetup{
+  colorlinks = true,
+  urlcolor = black,
+  pdfauthor = {\name},
+  pdfkeywords = {cs311 ``operating systems'' files filesystem I/O},
+  pdftitle = {CS 311 Project 1: UNIX File I/O},
+  pdfsubject = {CS 311 Project 1},
+  pdfpagemode = UseNone
+}
+
+\begin{document}
+
+\begin{titlepage}
+\centering
+{\Large Group 11-05: Daniel Schroeder and Brian Ozarowicz\par}
+\vspace{1cm}
+{\scshape\Large CS 444 Operating Systems II\par}
+{\scshape\Large Spring 2017\par}
+\vspace{1cm}
+{\huge\bfseries Assignment I: Getting Acquainted\par}
+\vspace{2cm}
+\begin{abstract}
+This document is a summary of Assignment 1 for CS 444 Operating Systems II at Oregon State University Spring 2017. This document includes a log of commands used to complete the kernel assignment, a description of all flags in the qemu command, a description of the concurrency assignment solution from Group 11-05, and the responses to the concurrency assignment follow up questions.
+\end{abstract}
+\end{titlepage}
+
+\section{Kernel Assignment}
+\bigskip
+
+\noindent\textbf{Log of Commands}
+\begin{enumerate}
+\item \texttt{cd /scratch/spring2017}
+\item \texttt{mkdir 11-05}
+\item \texttt{cd 11-05}
+\item \texttt{git clone git://git.yoctoproject.org/linux-yocto-3.14}
+\item \texttt{git checkout -b v3.14.26}
+\item \texttt{source /scratch/opt/environment-setup-i586-poky-linux.csh}
+\item \texttt{cd linux-yocto-3.14}
+\item \texttt{cp /scratch/spring2017/files/config-3.14.26-yocto-qemu .config}
+\item \texttt{make menuconfig}
+\item \texttt{/}
+\item \texttt{LOCALVERSION}
+\item \texttt{1}
+\item \texttt{-11-05-hw1}
+\item \texttt{make -j4 all}
+\item \texttt{cd ..}
+\item \texttt{cp /scratch/spring2017/files/bzImage-qemux86.bin .}
+\item \texttt{cp /scratch/spring2017/files/core-image-lsb-sdk-qemux86.ext3 .}
+\item \texttt{qemu-system-i386 -gdb tcp::6605 -S -nographic -kernel bzImage-qemux86.bin -drive\\file=core-image-lsb-sdk-qemux86.ext3,if=virtio -enable-kvm -net none -usb -localtime --no-reboot --append "root=/dev/vda rw console=ttyS0 debug"}
+\item \texttt{gdb}
+\item \texttt{target remote :6605}
+\item \texttt{continue}
+\item \texttt{root}
+\item \texttt{uname -a}
+\item \texttt{reboot}
+\item \texttt{qemu-system-i386 -gdb tcp::6605 -S -nographic -kernel linux-yocto-3.14/arch/x86/boot/\\bzImage  -drive file=core-image-lsb-sdk-qemux86.ext3,if=virtio -enable-kvm -net none -usb -localtime --no-reboot --append "root=/dev/vda rw console=ttyS0 debug"}
+\item \texttt{gdb}
+\item \texttt{target remote :6605}
+\item \texttt{continue}
+\item \texttt{root}
+\item \texttt{uname -a}
+\item \texttt{reboot}
+\end{enumerate}
+\bigskip
+
+\noindent\textbf{QEMU Flags}
+\begin{itemize}
+\item \texttt{-gdb tcp::11-05} Waits for gdb connection on the specified port
+\item \texttt{-S} Does not start the CPU at startup
+\item \texttt{-nographic} Disables all graphical output so that the QEMU runs as a simple command line application
+\item \texttt{-kernel bzImage-qemux86.bin} Specifies the kernel image to use
+\item \texttt{-drive file=core-image-lsb-sdk-qemux86.ext3,if=virtio} Defines a new drive using the specified disk image (\texttt{file}) that is connected via virtio interface 
+\item \texttt{-enable-kvm} Enables KVM (Kernel Virtual Machine) full virtualization support. This option is only available if KVM support is enabled when compiling.
+\item \texttt{-net none} Does not configure network devices
+\item \texttt{-usb} Enables the USB driver
+\item \texttt{-localtime} Sets the real time clock to the system's local time
+\item \texttt{--no-reboot} Exits instead of rebooting
+\item \texttt{--append "root=/dev/vda rw console=ttyS0 debug"} Adds additional options to the kernel command line which set the root filesystem as the first detected paravirtualized disk driver (\texttt{/dev/vda}), mounts the device read-write on boot (\texttt{rw}), and sets the output console to be the virtual console device on the first serial port with kernel debugging enabled
+\end{itemize}\pagebreak
+
+\section{Concurrency Assignment}
+\bigskip
+
+\noindent\textbf{Write-up}
+\medskip
+
+\medskip
+
+\noindent Our concurrency solution implemented pthreads and multithreading to solve a producer/consumer style problem. The problem: with a buffer of size 32, have producers add items (structs with int value number and int value wait time) to the buffer. The producers must wait a random number of seconds (time to produce) and also wait if the buffer is full. The consumers take the items from the buffer, sleeping for the time given in the buffer item struct's wait value, and blocking if the buffer is empty. To do this we implemented mutexes, pthread conditions, and concurrent programming.\par
+\medskip
+
+\medskip
+
+\noindent Our producers, once the thread is created, get a random number using either rdrand from x86 assembly instructions or the implemented mt19937 function and sleep for that amount of time (the time it takes to produce). When done sleeping the thread will lock the mutex which gives it exclusive access to the buffer. It then enters a loop to see if there are any available indexes in the buffer. If the buffer is full the producer thread waits for a consumer to throw the pthread condition for "full" meaning a consumer has opened up a space on the buffer. Once it is able to add its item to the buffer it throws a pthread condition "empty" to signal that the buffer is no longer empty, prints out the number, waits the time for the item it is adding, unlocks the mutex, and exits.\par
+\medskip
+
+\medskip
+
+\noindent Similarly, our consumer threads lock the mutex and enter a loop checking for an item in the buffer to consume. If the buffer is empty it will wait for a producer thread to throw a pthread condition that the buffer is no longer empty. Once there is an available item in the buffer the consumer stores its number and wait time in local variables and sets both struct fields to -1 (implying it is now an empty space) and unlocks the mutex. The consumer then waits the given amount of time, prints a message that it has consumed the specified number, then exits.\par
+\medskip
+
+\medskip
+
+\noindent Our main function mallocs enough size for the buffer and thread arrays, checks to see if rdrand is available to use, and initializes the mutex and pthread conditions. It then uses for loops to create and pthread\_join all the threads and wait for them to exit. The pthread condition variables allow the threads to synchronize by locking and unlocking the mutex until the specified condition is satisfied.\par
+\medskip
+
+\medskip
+
+\noindent The program accepts a command line parameter as the number of threads to produce. If the program is executed with \texttt{./concurrency1 100} it will create 100 producer and 100 consumer threads. On our own local machines this program works for N \textgreater 1000 threads, but on os-class it segfaults after about 240 threads, which we assume to be due to limitations on server permissions to mediate the amount of threads a single user can produce.\par
+\bigskip
+
+\bigskip
+
+\noindent\textbf{What do you think the main point of this assignment is?}
+\medskip
+
+\noindent This assignment was designed to introduce basic concurrency programming and get us familiar with pthreads, mutexes, and the basics of concurrent implementation. We were also introduced to inline assembly which we will use in our programs throughout the course.\par
+\medskip
+
+\bigskip
+
+\noindent\textbf{How did you personally approach the problem?}
+\medskip
+
+\noindent We went about the producer/consumer problem in a fairly straightforward manner, implementing a function to produce an object and a function to consume an object. Each function was used as the start routine for the respective pthread and communicated via pthread conditions and mutexes for access over the global buffer and synchronization. We used basic modular arithmetic to get a random number (within a specified range), from rdrand or the mt19937 algorithm, which we used as the wait-time struct field for consumer wait-time and producer sleep time.\par
+\medskip
+\noindent We also used two pthread arrays to keep track of all the producer threads and consumer threads. The first for loop in main created N number of threads and added them to the pthread arrays upon creation. The second for loop in main iterates through each array and calls pthread\_join to wait for thread termination.\par
+\medskip
+\noindent The buffer item struct has two int fields, one for the number to consume and one for the wait-time the consumer thread must wait in order to consume the specified number. We initialized the the buffer to empty structs with number and wait-time values of -1 and the consumer sets the item struct back to this default format once it is consumed.\par\pagebreak
+
+\noindent\textbf{How did you ensure your solution was correct?}
+\medskip
+
+\noindent We used a series of printf's to debug. We printed out the values produced as well as the number of threads being run. We could follow along with the program logic through these print statements watching how long threads would sleep for, when production and consumption was performed, and when pthread conditions were thrown and received. We also used a print buffer function which would run a for loop and print out the values of each item in the buffer. We used this to see when items were added and removed from the buffer, and when the buffer was empty or full. This helped fix a bug we had where the buffer was not originally emptying properly.\par
+\medskip
+
+\bigskip
+
+\noindent\textbf{What did you learn?}
+\medskip
+
+\noindent We had never used pthread condition variables before to communicate between threads and synchronized. This was very helpful in our solution to share the mutex during buffer full and buffer empty conditions. We also learned how to use inline assembly to generate random numbers which was a new concept for us in C programming.\par
+\bigskip
+
+\section{Version Control  Log}
+\bigskip
+
+\begin{tabular}{l l l}\textbf{Detail} & \textbf{Author} & \textbf{Description}\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/6fc0cad45a2a515f54c120fa6d411cbb62a0eed5}{6fc0cad} & DSchroederOSU & Initial commit\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/237aed09afe1e61e9421f419164f4d41387adddd}{237aed0} & DSchroederOSU & Added assignment 1 folder and starter file\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/2c475d7e15d1a54406c275a2a27c5df472c46ded}{2c475d7} & DSchroederOSU & added concurrency 1 file\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/4126204c49cd2e10090eb4d6bd3183bc23c94648}{4126204} & DSchroederOSU & working on concurrency1.c. made a skeleton of the project\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/d862edec54dd0eb51bdde6e26337315a2675d434}{d862ede} & DSchroederOSU & progress, got rdrand to work\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/a134adaeeff0b0ebc7bc662d809edc973ab6f841}{a134ada} & DSchroederOSU & finished concurrency logic with two threads\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/7096e2f214d8f164dcf02c58d8924f903281e867}{7096e2f} & DSchroederOSU & DONE I THINK\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/29c5440b4d14c3656d11c907e8794f6f08d98897}{29c5440} & DSchroederOSU & This works for n threads, there was a bug last time that would not clear the buffer space once consumed\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/c6ed2db4aab53f542abd8a00c05c9cf7953d9712}{c6ed2db} & ozarowib & recitation program\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/ce1d4cd2a712b1dfed27d304539fd552d15c4c6c}{ce1d4cd} & DSchroederOSU & added second random generator\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/870a6cf75e9cf205425b40b0fd90a21bece56299}{870a6cf} & DSchroederOSU & Merge branch 'master' of https://github.com/DSchroederOSU/CS444-Group\_11\_05\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/17fa4d7daa607f5a8466d4c854083fe763728c40}{17fa4d7} & Daniel Schroeder & works on os-class\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/8efe18126d63f4c3156da70cb6e8d6f3bb95dcf6}{8efe181} & Daniel Schroeder & test\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/f86076889a02b98fd55cc73c537e49ce93315ea4}{f860768} & DSchroederOSU & fixed argc\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/63f1ea3079fb2044a5fd16f4f60ed0afcecbca13}{63f1ea3} & Daniel Schroeder & tex progress\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/e3916b0f556dc4093d8689662850a7ac1a0a3e71}{e3916b0} & Daniel Schroeder & idk\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/bafbb7390e8525a17d2ad32ccd003c800ed0b4f0}{bafbb73} & Daniel Schroeder & ahaha\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/d8ae437d3f4dffe4287eab3471225d489f16af0a}{d8ae437} & ozarowib & conformed to class style guide\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/c7bf34a5a0bdc36bfc9815bdf012847cb9b6b3da}{c7bf34a} & ozarowib & IEEEtran working, updated Makefile\\\hline\end{tabular}
+
+\section{Work Log}
+
+\end{document}
