@@ -10,6 +10,8 @@ TRG	= $(SRC:%.tex=%.dvi)
 PSF	= $(SRC:%.tex=%.ps)
 PDF	= $(SRC:%.tex=%.pdf)
 
+default: all
+
 pdf: $(PDF)
 
 ps: $(PSF)
@@ -32,9 +34,12 @@ show: $(TRG)
 showps: $(PSF)
 	@for i in $(PSF) ; do $(GH) $$i & done
 
-all: pdf
+all: pdf concurrency1
+
+concurrency1:
+	gcc -lpthread -o concurrency1 concurrency1.c
 
 clean:
-	rm -f *.pdf *.ps *.dvi *.out *.log *.aux *.bbl *.blg *.pyg
+	rm -f *.pdf *.ps *.dvi *.out *.log *.aux *.bbl *.blg *.pyg *.o concurrency1
 
 .PHONY: all show clean ps pdf showps
