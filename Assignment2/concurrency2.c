@@ -1,7 +1,8 @@
 /*
- * Recitation Concurrency Assignemnt
+ * Recitation Concurrency Assignment
  * Operating Systems II
  * Brian Ozarowicz, Daniel Schroeder
+ * Group 11-05
  * Spring 2017
  */
 
