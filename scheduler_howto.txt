@@ -1,0 +1,8 @@
+Go to the following directory:
+	/sys/block/<device-name>/queue/
+
+To view which scheduler is currently being used:
+	cat scheduler
+
+To change the I/O scheduler for that device:
+	echo <sched-name> > scheduler
