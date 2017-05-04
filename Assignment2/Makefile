@@ -1,3 +1,6 @@
+CFLAGS	= -Wall -std=c11 -pedantic-errors -O0 -lpthread
+TARGET	= concurrency2
+
 LATEX	= latex -shell-escape
 DVIPS	= dvips
 DVIPDF  = dvipdft
@@ -34,12 +37,12 @@ show: $(TRG)
 showps: $(PSF)
 	@for i in $(PSF) ; do $(GH) $$i & done
 
-all: pdf concurrency2
+all: pdf prog
 
-concurrency2:
-	gcc -lpthread -o concurrency2 concurrency2.c
+prog:
+	gcc $(CFLAGS) -o $(TARGET) $(TARGET).c
 
 clean:
-	rm -f *.pdf *.ps *.dvi *.out *.log *.aux *.bbl *.blg *.pyg *.o concurrency1
+	rm -f *.pdf *.ps *.dvi *.out *.log *.aux *.bbl *.blg *.pyg *.o $(TARGET)
 
 .PHONY: all show clean ps pdf showps
