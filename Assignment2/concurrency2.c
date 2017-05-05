@@ -80,7 +80,7 @@ void philosopher_func (struct thread_info * p)
 	int thinktime, eattime;
 	counter = 1;
 	 
-
+	while(1){	
 		//THINK
 		thinktime = (rand() % (THINK_MAX-THINK_MIN+1)) + THINK_MIN;	
 		printf("%s is starting to THINK for %d seconds.\n", names[p->name], thinktime);
@@ -109,7 +109,7 @@ void philosopher_func (struct thread_info * p)
 		sleep(eattime);
 
 		//PUT FORK
-		eating[index] = 2;
+		eating[index] = 0;
 		printf("%s is done eating. Putting down forks...\n", names[p->name]);
 		pthread_mutex_lock(&p_mutex);
 		forks[p->left] = 0;
@@ -117,7 +117,7 @@ void philosopher_func (struct thread_info * p)
 		pthread_mutex_unlock(&p_mutex);
 		print_status();
 		counter++;
-	 
+	 }
 }
 
 int main()

@@ -40,6 +40,6 @@ concurrency2:
 	gcc -lpthread -o concurrency2 concurrency2.c
 
 clean:
-	rm -f *.pdf *.ps *.dvi *.out *.log *.aux *.bbl *.blg *.pyg *.o concurrency1
+	rm -f *.pdf *.ps *.dvi *.out *.log *.aux *.bbl *.blg *.pyg *.o concurrency2
 
 .PHONY: all show clean ps pdf showps
