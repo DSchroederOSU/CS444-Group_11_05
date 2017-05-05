@@ -25,6 +25,19 @@
 \usepackage{xcolor}
 \usepackage{textcomp}
 \usepackage{listings}
+\lstdefinestyle{ccode}{
+  belowcaptionskip=1\baselineskip,
+  breaklines=true,
+  frame=L,
+  xleftmargin=\parindent,
+  language=C,
+  showstringspaces=false,
+  basicstyle=\footnotesize\ttfamily,
+  keywordstyle=\bfseries\color{green!40!black},
+  commentstyle=\itshape\color{purple!40!black},
+  identifierstyle=\color{blue},
+  stringstyle=\color{orange},
+}
 
 \usepackage{hyperref}
 \usepackage{geometry}
@@ -79,8 +92,8 @@
 \bigskip
 
 BLAH BLAH BLAH ABOUT KERNEL ASSIGNMENT\\
-
-\lstinputlisting[caption=sstf\_add\_request() call in sstf-iosched.c, language=c]{./code-for-writeup.c}
+\bigskip
+\lstinputlisting[caption=The new sstf\_add\_request() function in sstf-iosched.c, language=c, style=ccode]{codeforwriteup.c}
 
 \pagebreak
 

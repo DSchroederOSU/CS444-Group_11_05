@@ -7,7 +7,7 @@ DVIPDF  = dvipdft
 XDVI	= xdvi -gamma 4
 GH		= gv
 
-EXAMPLES = $(wildcard *.h)
+EXAMPLES = $(wildcard *.c)
 SRC	:= $(shell egrep -l '^[^%]*\\begin\{document\}' *.tex)
 TRG	= $(SRC:%.tex=%.dvi)
 PSF	= $(SRC:%.tex=%.ps)
@@ -20,6 +20,7 @@ pdf: $(PDF)
 ps: $(PSF)
 
 $(TRG): %.dvi: %.tex $(EXAMPLES)
+
 	$(LATEX) $<
 	$(LATEX) $<
 	$(LATEX) $<
