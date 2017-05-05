@@ -22,13 +22,17 @@
 \newcommand{\cred}[1]{{\color{red}#1}}
 \newcommand{\cblue}[1]{{\color{blue}#1}}
 
+\usepackage{xcolor}
+\usepackage{textcomp}
+\usepackage{listings}
+
 \usepackage{hyperref}
 \usepackage{geometry}
 
 \def\name{Group 11-05}
 
 %pull in the necessary preamble matter for pygments output
-
+\input{pygments.tex}
 %% The following metadata will show up in the PDF properties
 \hypersetup{
   colorlinks = true,
@@ -74,56 +78,11 @@
 \section{Kernel Assignment}
 \bigskip
 
-\noindent\textbf{Log of Commands}
-\begin{enumerate}
-\item \texttt{cd /scratch/spring2017}
-\item \texttt{mkdir 11-05}
-\item \texttt{cd 11-05}
-\item \texttt{git clone git://git.yoctoproject.org/linux-yocto-3.14}
-\item \texttt{git checkout -b v3.14.26}
-\item \texttt{source /scratch/opt/environment-setup-i586-poky-linux.csh}
-\item \texttt{cd linux-yocto-3.14}
-\item \texttt{cp /scratch/spring2017/files/config-3.14.26-yocto-qemu .config}
-\item \texttt{make menuconfig}
-\item \texttt{/}
-\item \texttt{LOCALVERSION}
-\item \texttt{1}
-\item \texttt{-11-05-hw1}
-\item \texttt{make -j4 all}
-\item \texttt{cd ..}
-\item \texttt{cp /scratch/spring2017/files/bzImage-qemux86.bin .}
-\item \texttt{cp /scratch/spring2017/files/core-image-lsb-sdk-qemux86.ext3 .}
-\item \texttt{qemu-system-i386 -gdb tcp::6605 -S -nographic -kernel bzImage-qemux86.bin -drive\\file=core-image-lsb-sdk-qemux86.ext3,if=virtio -enable-kvm -net none -usb -localtime --no-reboot --append "root=/dev/vda rw console=ttyS0 debug"}
-\item \texttt{gdb}
-\item \texttt{target remote :6605}
-\item \texttt{continue}
-\item \texttt{root}
-\item \texttt{uname -a}
-\item \texttt{reboot}
-\item \texttt{qemu-system-i386 -gdb tcp::6605 -S -nographic -kernel linux-yocto-3.14/arch/x86/boot/\\bzImage  -drive file=core-image-lsb-sdk-qemux86.ext3,if=virtio -enable-kvm -net none -usb -localtime --no-reboot --append "root=/dev/vda rw console=ttyS0 debug"}
-\item \texttt{gdb}
-\item \texttt{target remote :6605}
-\item \texttt{continue}
-\item \texttt{root}
-\item \texttt{uname -a}
-\item \texttt{reboot}
-\end{enumerate}
-\bigskip
+BLAH BLAH BLAH ABOUT KERNEL ASSIGNMENT\\
 
-\noindent\textbf{QEMU Flags}
-\begin{itemize}
-\item \texttt{-gdb tcp::11-05} Waits for gdb connection on the specified port
-\item \texttt{-S} Does not start the CPU at startup
-\item \texttt{-nographic} Disables all graphical output so that the QEMU runs as a simple command line application
-\item \texttt{-kernel bzImage-qemux86.bin} Specifies the kernel image to use
-\item \texttt{-drive file=core-image-lsb-sdk-qemux86.ext3,if=virtio} Defines a new drive using the specified disk image (\texttt{file}) that is connected via virtio interface 
-\item \texttt{-enable-kvm} Enables KVM (Kernel Virtual Machine) full virtualization support. This option is only available if KVM support is enabled when compiling.
-\item \texttt{-net none} Does not configure network devices
-\item \texttt{-usb} Enables the USB driver
-\item \texttt{-localtime} Sets the real time clock to the system's local time
-\item \texttt{--no-reboot} Exits instead of rebooting
-\item \texttt{--append "root=/dev/vda rw console=ttyS0 debug"} Adds additional options to the kernel command line which set the root filesystem as the first detected paravirtualized disk driver (\texttt{/dev/vda}), mounts the device read-write on boot (\texttt{rw}), and sets the output console to be the virtual console device on the first serial port with kernel debugging enabled
-\end{itemize}\pagebreak
+\lstinputlisting[caption=sstf\_add\_request() call in sstf-iosched.c, language=c]{./code-for-writeup.c}
+
+\pagebreak
 
 \section{Concurrency Assignment}
 \bigskip
@@ -161,7 +120,7 @@
 \noindent\textbf{What do you think the main point of this assignment is?}
 \medskip
 
-\noindent The main point of the assignment was to gain more experience with dealing with potential race conditions and how to allocate processing time to different threads. To deal with with race conditions, we were expected to write a semaphore implementation or to use mutexes to make sure critical variables are only being manipulated by a single thread at a time. As an extra, this assignment was also about giving unique information to different threads, as each had to be aware which fork was to the "left" and "right" of each thread.
+\noindent The main point of the assignment was to gain more experience with dealing with potential race conditions and how to allocate processing time to different threads. To deal with with race conditions, we were expected to write a semaphore implementation or to use mutexes to make sure critical variables are only being manipulated by a single thread at a time. As an extra, this assignment was also about giving unique information to different threads, as each had to be aware which fork was to the ``left" and ``right" of each thread.
 \medskip
 
 \bigskip
@@ -169,7 +128,7 @@
 \noindent\textbf{How did you personally approach the problem?}
 \medskip
 
-\noindent To keep track of which forks were being used, we simply made a global array that would hold a boolean value to indicate whether the fork was in use or not. We also created a struct for each thread that would contain the index of the left fork, the index of the right fork and the name (ID) of the thread. This struct was passed into the thread starting point when calling the pthread_create() function.\\
+\noindent To keep track of which forks were being used, we simply made a global array that would hold a boolean value to indicate whether the fork was in use or not. We also created a struct for each thread that would contain the index of the left fork, the index of the right fork and the name (ID) of the thread. This struct was passed into the thread starting point when calling the pthread\_create() function.\\
 \medskip
 \noindent When the thread starts, it generates a random amount of thinking time and sleeps for that amount of time. Then, it generates a random eating time and checks if the forks adjacent to it are available to start eating. If not, it waits until they are. The thread "eats" for the amount of time specified and when done, it releases the forks for other threads to use.\\
 \medskip
@@ -188,7 +147,7 @@
 
 \noindent During this assignment, I learned how to properly pass variables when creating a thread. Although only a single variable of type (void *) can be passed, a structure can be created and typecasted into a void pointer which lets us pass in more arguments.  Furthermore, the argument and return type of the function need to be explicitly defined as void pointer.\\
 \noindent Another thing I learned is that the memset() function throws out the 'volatile' tag if being used on a volatile variable. I kept using memset() but made sure the compiler optimizations were disabled (just in case) since we are working with a few global variables.\\
-\noindent Finally, I learned that it is a good habit to also lock mutexes when reading a shared variable, otherwise you might be reading some wrong information. It’s hard to predict when the data will change, and it’s safer to freeze the state of critical variables when reading multiple of them so that they are in the same "time state".\\
+\noindent Finally, I learned that it is a good habit to also lock mutexes when reading a shared variable, otherwise you might be reading some wrong information. It's hard to predict when the data will change, and it's safer to freeze the state of critical variables when reading multiple of them so that they are in the same ``time state".\\
 \bigskip
 
 \section{Version Control Log}
