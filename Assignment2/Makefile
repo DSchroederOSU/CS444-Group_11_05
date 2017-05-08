@@ -1,13 +1,10 @@
-CFLAGS	= -Wall -std=c11 -pedantic-errors -O0 -lpthread
-TARGET	= concurrency2
-
 LATEX	= latex -shell-escape
 DVIPS	= dvips
 DVIPDF  = dvipdft
 XDVI	= xdvi -gamma 4
 GH		= gv
 
-EXAMPLES = $(wildcard *.c)
+EXAMPLES = $(wildcard *.h)
 SRC	:= $(shell egrep -l '^[^%]*\\begin\{document\}' *.tex)
 TRG	= $(SRC:%.tex=%.dvi)
 PSF	= $(SRC:%.tex=%.ps)
@@ -20,7 +17,6 @@ pdf: $(PDF)
 ps: $(PSF)
 
 $(TRG): %.dvi: %.tex $(EXAMPLES)
-
 	$(LATEX) $<
 	$(LATEX) $<
 	$(LATEX) $<
@@ -38,10 +34,10 @@ show: $(TRG)
 showps: $(PSF)
 	@for i in $(PSF) ; do $(GH) $$i & done
 
-all: pdf prog
+all: pdf concurrency2
 
-prog:
-	gcc $(CFLAGS) -o $(TARGET) $(TARGET).c
+concurrency2:
+	gcc -std=c99 -lpthread -o concurrency2 concurrency2.c
 
 clean:
 	rm -f *.pdf *.ps *.dvi *.out *.log *.aux *.bbl *.blg *.pyg *.o $(TARGET)
