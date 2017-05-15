@@ -93,7 +93,8 @@ int main(int argc, char *argv[]) {
     	pthread_create(&barber_thread, NULL, barb, NULL);
 
 		// Create the customers.
-		// This is to print the thread number (i.e. Customer# is...).
+		// This is to print the thread number (i.e. Customer# is...)
+		int customers[10];
     	int i;
     	for (i=0; i<10; i++) {
 			customers[i] = i;
