@@ -50,8 +50,8 @@ static unsigned long mt[N];
 static int mti = N + 1;
 
 // Function prototypes...
-void *getHairCut(void *num);
-void *cutHair(void *);
+void *cust(void *num);
+void *barb(void *);
 
 int rdrand(int min, int max);
 int barber_cut_time(int min, int max);
@@ -65,7 +65,7 @@ unsigned long genrand_int32(void);
 int n = 4; 
 
 int customers = 0; //number of customers in the shop
-
+int allDone = 0;
 //customers counts the number of customers 
 //in the shop; it is protected by mutex.
 sem_t mutex; 
@@ -89,12 +89,12 @@ int main(int argc, char *argv[]) {
 		pthread_t customer_thread[n];
 		
 		// Create the barber.
-    	pthread_create(&barber_thread, NULL, cutHair, NULL);
+    	pthread_create(&barber_thread, NULL, barb, NULL);
 
 		// Create the customers.
 		int i;
 		for (i=0; i<10; i++) {
-		pthread_create(&customer_thread[i], NULL, getHairCut, NULL);
+		pthread_create(&customer_thread[i], NULL, cust, NULL);
 		}
 
 		// Join each of the threads to wait for them to finish.
@@ -104,13 +104,13 @@ int main(int argc, char *argv[]) {
 
 		// When all of the customers are finished, kill the
 		// barber thread.
-		
+		allDone = 1;
 		pthread_join(barber_thread,NULL);
 		
 		
 }
 
-void *getHairCut(void *number) {
+void *cust(void *number) {
 		sem_wait(&mutex); 
 	
 		if(customers == n){
@@ -125,30 +125,34 @@ void *getHairCut(void *number) {
 		sem_post(&customer); 
 		sem_wait(&barber); 
 
-		//getHairCut ()
-
+		getHairCut();
+		}
+}
+void getHairCut(){
 		sem_post(&customerDone); 
 		sem_wait(&barberDone); 
-
 
 		sem_wait(&mutex); 
 		customers -= 1;
 		sem_post(&mutex); 
+
+}
+void *barb(void *b) {
+		while(!allDone){
+				sem_wait(&customer);
+				sem_post(&barber); 
+				cutHair();
 		}
 }
-
-void *cutHair(void *b) {
-		sem_wait(&customer);
-		sem_post(&barber); 
+void cutHair(){
 		
-		//cutHair ()
 		int time = barber_cut_time(3, 7);
 		printf("Barber is cutting hair for %d seconds...\n", time);
         sleep(time);
-		sem_wait(&customerDone); 
-		sem_post(&barberDone); 
-}
+        sem_wait(&customerDone); 
+		sem_post(&barberDone);
 
+}
 int barber_cut_time(int min, int max)
 {
 		int time;
