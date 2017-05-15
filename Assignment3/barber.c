@@ -136,6 +136,9 @@ int main(int argc, char *argv[]) {
     srand48(RandSeed);
 	*/
 	
+	numCustomers = 10;
+    numChairs = 5;
+	
     // Initialize the numbers array.
     for (i=0; i<MAX_CUSTOMERS; i++) {
 	customers[i] = i;
