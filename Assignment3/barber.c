@@ -53,7 +53,7 @@ static int mti = N + 1;
 void *cust(void *num);
 void *barb(void *);
 void cutHair();
-void getHairCut();
+void getHairCut(int n);
 int rdrand(int min, int max);
 int barber_cut_time(int min, int max);
 int mt19937(int min, int max);
@@ -135,17 +135,17 @@ void *cust(void *number) {
 		sem_post(&customer); 
 		sem_wait(&barber); 
 		printf("Customer %d is going to barber chair...\n", num);
-		getHairCut();
-		
-		}
-}
-void getHairCut(){
+		getHairCut(num);
 		sem_post(&customerDone); 
 		sem_wait(&barberDone); 
 		sem_wait(&mutex); 
 		customers -= 1;
 		sem_post(&mutex); 
-
+		
+		}
+}
+void getHairCut(int n){
+		printf("Customer %d is getting a hair cut...\n", n);
 }
 void *barb(void *b) {
 		while(!allDone){
