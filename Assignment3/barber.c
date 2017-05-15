@@ -52,7 +52,8 @@ static int mti = N + 1;
 // Function prototypes...
 void *cust(void *num);
 void *barb(void *);
-
+void cutHair();
+void getHairCut();
 int rdrand(int min, int max);
 int barber_cut_time(int min, int max);
 int mt19937(int min, int max);
