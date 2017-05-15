@@ -53,7 +53,11 @@ def Customer():
 
 // The maximum number of customer threads.
 #define MAX_CUSTOMERS 25
-
+#define N 624
+#define M 397
+#define MATRIX_A 0x9908b0dfUL
+#define UPPER_MASK 0x80000000UL
+#define LOWER_MASK 0x7fffffffUL
 // Function prototypes...
 void *customer(void *num);
 void *barber(void *);
@@ -229,7 +233,7 @@ void barber_cut_time(int min, int max)
 
 int rdrand(int min, int max)
 {
-		uint64_t arand;
+		unsigned long long arand;
 		int success = 1;
 		int attempt_limit_exceeded = -1;
 		int attempt_limit = 10;
@@ -240,7 +244,7 @@ int rdrand(int min, int max)
 						if (min == -1 && max == -1)
 								return (int) arand;
 						else
-								return (arand % (uint64_t)(max - min + 1)) + min;
+								return (arand % (unsigned long long)(max - min + 1)) + min;
 				}
 		}
 		return attempt_limit_exceeded;
