@@ -199,7 +199,7 @@ void *customer(int number) {
     
     // Give up the chair.
     sem_post(&barber_chair);
-    printf("Customer %d leaving barber shop.\n", num);
+    printf("Customer %d leaving barber shop.\n", number);
 }
 
 void *barber(void *junk) {
