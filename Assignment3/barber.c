@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
 
 		// When all of the customers are finished, kill the
 		// barber thread.
-		printf("REACHED\n");
+		
 		allDone = 1;
 		sem_post(&barber);
 		pthread_join(barber_thread, NULL);
@@ -152,6 +152,8 @@ void *barb(void *b) {
 				sem_wait(&customer);
 				sem_post(&barber); 
 				cutHair();
+				sem_wait(&customerDone); 
+				sem_post(&barberDone);
 		}
 		printf("BARBER LOOP EXIT\n");
 }
@@ -160,8 +162,7 @@ void cutHair(){
 		int time = barber_cut_time(3, 7);
 		printf("Barber is cutting hair for %d seconds...\n", time);
         sleep(time);
-        sem_wait(&customerDone); 
-		sem_post(&barberDone);
+        
 
 }
 int barber_cut_time(int min, int max)
