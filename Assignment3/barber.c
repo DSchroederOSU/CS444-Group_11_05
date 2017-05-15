@@ -111,7 +111,17 @@ int main(int argc, char *argv[]) {
 
 		// When all of the customers are finished, kill the
 		// barber thread.
-		
+		printf("Reached\n");
+		int value; 
+      	sem_getvalue(&barber, &value); 
+      	printf("The value of the barber is %d\n", value);
+      	sem_getvalue(&customer, &value); 
+      	printf("The value of the customer is %d\n", value);
+      	sem_getvalue(&barberDone, &value); 
+      	printf("The value of the barberDone is %d\n", value);
+      	sem_getvalue(&customerDone, &value); 
+      	printf("The value of the customerDone is %d\n", value);
+      
 		allDone = 1;
 		sem_post(&barber);
 		pthread_join(barber_thread, NULL);
@@ -133,13 +143,12 @@ void *cust(void *number) {
 		sem_post(&mutex); 
 		sem_post(&customer); 
 		sem_wait(&barber); 
-		printf("Customer %d is getting a hair cut...\n", n);
+		printf("Customer %d is getting a hair cut...\n", num);
 		sem_post(&customerDone); 
 		sem_wait(&barberDone); 
 		sem_wait(&mutex); 
 		customers -= 1;
 		sem_post(&mutex); 
-		
 		}
 }
 void *barb(void *b) {
