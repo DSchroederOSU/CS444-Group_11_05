@@ -1,45 +1,23 @@
 /*
 THE SLEEPING BARBER PROBLEM
 
-The barber has one barber chair and a waiting room with a number of chairs in it. 
-When the barber finishes cutting a customer's hair, he dismisses the customer 
-and then goes to the waiting room to see if there are other customers waiting. 
-If there are, he brings one of them back to the chair and cuts his hair. 
-If there are no other customers waiting, he returns to his chair and sleeps in it.
+A barbershop consists of a waiting room with n chairs, and the
+barber room containing the barber chair. If there are no customers
+to be served, the barber goes to sleep. If a customer enters the
+barbershop and all chairs are occupied, then the customer leaves
+the shop. If the barber is busy, but chairs are available, then the
+customer sits in one of the free chairs. If the barber is asleep, the
+customer wakes up the barber. Write a program to coordinate the
+barber and the customers.
 
-Each customer, when he arrives, looks to see what the barber is doing. 
-If the barber is sleeping, then the customer wakes him up and sits in the chair. 
-If the barber is cutting hair, then the customer goes to the waiting room. 
-If there is a free chair in the waiting room, the customer sits in it and waits his turn. 
-If there is no free chair, then the customer leaves.
-
-# The first two are mutexes (only 0 or 1 possible)
-Semaphore barberReady = 0
-Semaphore accessWRSeats = 1     # if 1, the number of seats in the waiting room can be incremented or decremented
-Semaphore custReady = 0         # the number of customers currently in the waiting room, ready to be served
-int numberOfFreeWRSeats = N     # total number of seats in the waiting room
-
-def Barber():
-  while true:                   # Run in an infinite loop.
-    wait(custReady)             # Try to acquire a customer - if none is available, go to sleep.
-    wait(accessWRSeats)         # Awake - try to get access to modify # of available seats, otherwise sleep.
-    numberOfFreeWRSeats += 1    # One waiting room chair becomes free.
-    signal(barberReady)         # I am ready to cut.
-    signal(accessWRSeats)       # Don't need the lock on the chairs anymore.
-    # (Cut hair here.)
-
-def Customer():
-    wait(accessWRSeats)         # Try to get access to the waiting room chairs.
-    if numberOfFreeWRSeats > 0: # If there are any free seats:
-      numberOfFreeWRSeats -= 1  #   sit down in a chair
-      signal(custReady)         #   notify the barber, who's waiting until there is a customer
-      signal(accessWRSeats)     #   don't need to lock the chairs anymore
-      wait(barberReady)         #   wait until the barber is ready
-      # (Have hair cut here.)
-    else:                       # otherwise, there are no free seats; tough luck --
-      signal(accessWRSeats)     #   but don't forget to release the lock on the seats!
-      # (Leave without a haircut.)
-
+To make the problem a little more concrete, I added the following information:
+• Customer threads should invoke a function named getHairCut.
+• If a customer thread arrives when the shop is full, it can invoke balk,
+which does not return.
+• The barber thread should invoke cutHair.
+• When the barber invokes cutHair there should be exactly one thread
+invoking getHairCut concurrently.
+Write a solution that guarantees these constraints.
 */
 
 #define _REENTRANT
@@ -72,8 +50,8 @@ static unsigned long mt[N];
 static int mti = N + 1;
 
 // Function prototypes...
-void *customer(void *num);
-void *barber(void *);
+void *getHairCut(void *num);
+void *cutHair(void *);
 
 int rdrand(int min, int max);
 void barber_cut_time(int min, int max);
@@ -82,151 +60,90 @@ void init_genrand(unsigned long s);
 void init_by_array(unsigned long init_key[], int key_length);
 unsigned long genrand_int32(void);
 
-// Define semaphores.
+// total number of customers that can be in the shop
+// 1 in barber chair, n - 1 in waiting room
+int n = 4; 
 
-//seats in waiting room
-sem_t wait_seats;   
+int customers = 0; //number of customers in the shop
 
-//only one person in barber chair
-sem_t barber_chair;
+//customers counts the number of customers 
+//in the shop; it is protected by mutex.
+sem_t mutex; 
 
-// Allows barber to sleep when no customers waiting
-sem_t barber_sleep;
+sem_t customer;
+sem_t barber;
 
-// customer wait until barber is available
-sem_t customer_wait;
-
-// Flag to stop the barber thread when all customers
-// have been serviced.
-int allDone = 0;
+sem_t customerDone; //done getting haircut
+sem_t barberDone; //done cutting hair
 
 int main(int argc, char *argv[]) {
-    pthread_t barber_thread;
-    pthread_t customer_thread[MAX_CUSTOMERS];
-    long RandSeed;
-    int i, numCustomers, numChairs;
-    int customers[MAX_CUSTOMERS];
-    
-    
-    /*    
-    // Check to make sure there are the right number of
-    // command line arguments.
-    if (argc != 4) {
-	printf("Use: SleepBarber <Num Customers> <Num Chairs> <rand seed>\n");
-	exit(-1);
-    }
-    
-    // Get the command line arguments and convert them
-    // into integers.
-    numCustomers = atoi(argv[1]);
-    numChairs = atoi(argv[2]);
-    RandSeed = atol(argv[3]);
-    
-    // Make sure the number of threads is less than the number of
-    // customers we can support.
-    if (numCustomers > MAX_CUSTOMERS) {
-	printf("The maximum number of Customers is %d.\n", MAX_CUSTOMERS);
-	exit(-1);
-    }
-	*/
-	
-	//-----------------------------------------
-	//-----------------------------------------
-	//THIS MAY NEED TO CHANGE
-	numCustomers = 10;
-    numChairs = 5;
-	//-----------------------------------------
-	//-----------------------------------------
-	
-	
-    // This is to print the thread number (i.e. Customer# is...).
-    for (i=0; i<MAX_CUSTOMERS; i++) {
-	customers[i] = i;
-    }
-    
+		//initialize semaphores
+		sem_init(&mutex, 0, 1);  
+		sem_init(&customer, 0, 0); 
+		sem_init(&barber, 0, 0); 
+		sem_init(&customerDone, 0, 0); 
+		sem_init(&barberDone, 0, 0); 
 		
-    // Initialize the semaphores with initial values...
-    sem_init(&wait_seats, 0, numChairs); // how many chairs are in wait room
-    sem_init(&barber_chair, 0, 1); // there is only one barber chair
-    sem_init(&barber_sleep, 0, 0); // barber sleeps when not working
-    sem_init(&customer_wait, 0, 0); // customer is getting a haircut
-    
-    // Create the barber.
-    pthread_create(&barber_thread, NULL, barber, NULL);
+		
+		pthread_t barber_thread;
+		pthread_t customer_thread[n];
+		
+		// Create the barber.
+    	pthread_create(&barber_thread, NULL, cutHair, NULL);
 
-    // Create the customers.
-    for (i=0; i<numCustomers; i++) {
-	pthread_create(&customer_thread[i], NULL, customer, (void *)&customers[i]);
-    }
+		// Create the customers.
+		int i;
+		for (i=0; i<10; i++) {
+		pthread_create(&customer_thread[i], NULL, getHairCut, NULL);
+		}
 
-    // Join each of the threads to wait for them to finish.
-    for (i=0; i<numCustomers; i++) {
-	pthread_join(customer_thread[i],NULL);
-    }
+		// Join each of the threads to wait for them to finish.
+		for (i=0; i<10; i++) {
+		pthread_join(customer_thread[i],NULL);
+		}
 
-    // When all of the customers are finished, kill the
-    // barber thread.
-    allDone = 1;
-    sem_post(&barber_sleep);  // Wake the barber so he will exit.
-    pthread_join(barber_thread,NULL);	
+		// When all of the customers are finished, kill the
+		// barber thread.
+		
+		pthread_join(barber_thread,NULL);
+		
+		
 }
 
-void *customer(void *number) {
-    int num = *(int *)number;
+void *getHairCut(void *number) {
+		sem_wait(&mutex); 
+	
+		if(customers == n){
+			printf("No seats available, leaving store.\n");
+			sem_post(&mutex); 
+		}
+	
+		customers += 1;
+		sem_post(&mutex); 
 
-    /* Leave for the shop and take some random amount of
-   	// time to arrive.
-    printf("Customer %d leaving for barber shop.\n", num);
-    randwait(5);
-    printf("Customer %d arrived at barber shop.\n", num);
-    */
-    
+		sem_post(&customer); 
+		sem_wait(&barber); 
 
-    // Wait for space to open up in the waiting room...
-    sem_wait(&wait_seats);
-    printf("Customer %d entering waiting room.\n", num);
+		//getHairCut ()
 
-    // Wait for the barber chair to become free.
-    sem_wait(&barber_chair);
-    
-    // The chair is free so give up your spot in the
-    // waiting room.
-    sem_post(&wait_seats);
+		sem_post(&customerDone); 
+		sem_wait(&barberDone); 
 
-    // Wake up the barber...
-    printf("Customer %d waking the barber.\n", num);
-    sem_post(&barber_sleep);
 
-    // Wait for the barber to finish cutting your hair.
-    sem_wait(&customer_wait);
-    
-    // Give up the chair.
-    sem_post(&barber_chair);
-    printf("Customer %d leaving barber shop.\n", num);
+		sem_wait(&mutex); 
+		customers -= 1;
+		sem_post(&mutex); 
 }
 
-void *barber(void *b) {
-    // This changes when all customers have been accounted for
-    while (!allDone) {
-
-	// Sleep until someone arrives and wakes you..
-	printf("The barber is sleeping\n");
-	sem_wait(&barber_sleep);
-
-	// Skip this stuff at the end...
-	if (!allDone) {
-
-	    // This random value may change
-	   	barber_cut_time(3, 6);
-	    printf("The barber has finished cutting hair.\n");
-
-	    // haircut is done
-	    sem_post(&customer_wait);
-	}
-	else {
-	    printf("All customers have been serviced.\n");
-	}
-    }
+void *cutHair(void *b) {
+		sem_wait(&customer);
+		sem_post(&barber); 
+		
+		//cutHair ()
+		barber_cut_time(3, 7);
+		
+		sem_wait(&customerDone); 
+		sem_post(&barberDone); 
 }
 
 void barber_cut_time(int min, int max)
