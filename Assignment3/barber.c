@@ -128,28 +128,28 @@ int main(int argc, char *argv[]) {
 	printf("The maximum number of Customers is %d.\n", MAX_CUSTOMERS);
 	exit(-1);
     }
-    
-    printf("\nSleepBarber.c\n\n");
-    printf("A solution to the sleeping barber problem using semaphores.\n");
-    
-    // Initialize the random number generator with a new seed.
-    srand48(RandSeed);
 	*/
 	
+	//-----------------------------------------
+	//-----------------------------------------
+	//THIS MAY NEED TO CHANGE
 	numCustomers = 10;
     numChairs = 5;
+	//-----------------------------------------
+	//-----------------------------------------
 	
-    // Initialize the numbers array.
+	
+    // This is to print the thread number (i.e. Customer# is...).
     for (i=0; i<MAX_CUSTOMERS; i++) {
 	customers[i] = i;
     }
     
 		
     // Initialize the semaphores with initial values...
-    sem_init(&wait_seats, 0, numChairs);
-    sem_init(&barber_chair, 0, 1);
-    sem_init(&barber_sleep, 0, 0);
-    sem_init(&customer_wait, 0, 0);
+    sem_init(&wait_seats, 0, numChairs); // how many chairs are in wait room
+    sem_init(&barber_chair, 0, 1); // there is only one barber chair
+    sem_init(&barber_sleep, 0, 0); // barber sleeps when not working
+    sem_init(&customer_wait, 0, 0); // customer is getting a haircut
     
     // Create the barber.
     pthread_create(&barber_thread, NULL, barber, NULL);
@@ -205,10 +205,8 @@ void *customer(void *number) {
     printf("Customer %d leaving barber shop.\n", num);
 }
 
-void *barber(void *junk) {
-    // While there are still customers to be serviced...
-    // Our barber is omnicient and can tell if there are 
-    // customers still on the way to his shop.
+void *barber(void *b) {
+    // This changes when all customers have been accounted for
     while (!allDone) {
 
 	// Sleep until someone arrives and wakes you..
@@ -218,16 +216,15 @@ void *barber(void *junk) {
 	// Skip this stuff at the end...
 	if (!allDone) {
 
-	    // Take a random amount of time to cut the
-	    // customer's hair.
+	    // This random value may change
 	   	barber_cut_time(3, 6);
 	    printf("The barber has finished cutting hair.\n");
 
-	    // Release the customer when done cutting...
+	    // haircut is done
 	    sem_post(&customer_wait);
 	}
 	else {
-	    printf("The barber is going home for the day.\n");
+	    printf("All customers have been serviced.\n");
 	}
     }
 }
