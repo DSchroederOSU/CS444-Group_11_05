@@ -111,11 +111,10 @@ int main(int argc, char *argv[]) {
 
 		// When all of the customers are finished, kill the
 		// barber thread.
-		printf("REACHED\n");
 		allDone = 1;
-		pthread_join(barber_thread,NULL);
+		pthread_join(barber_thread, NULL);
 		
-		
+		return 0;
 }
 
 void *cust(void *number) {
