@@ -72,7 +72,7 @@ static unsigned long mt[N];
 static int mti = N + 1;
 
 // Function prototypes...
-void *customer(void *num);
+void *customer(int number);
 void *barber(void *);
 
 int rdrand(int min, int max);
