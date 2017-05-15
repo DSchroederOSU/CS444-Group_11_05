@@ -152,8 +152,8 @@ void *barb(void *b) {
 				sem_wait(&customer);
 				sem_post(&barber); 
 				cutHair();
-				printf("Barber is waiting for next customer...\n");
 		}
+		printf("BARBER LOOP EXIT\n");
 }
 void cutHair(){
 		
