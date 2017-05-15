@@ -60,6 +60,14 @@ def Customer():
 #define UPPER_MASK 0x80000000UL
 #define LOWER_MASK 0x7fffffffUL
 
+/* This calls assembler instruction rdrand and places the random number value into *arand */
+int rdrand64_step (uint64_t *arand)
+{
+        unsigned char ok;
+        __asm__ __volatile__ ("rdrand %0; setc %1" : "=r" (*arand), "=qm" (ok));
+        return (int) ok;
+}
+
 static unsigned long mt[N];
 static int mti = N + 1;
 
