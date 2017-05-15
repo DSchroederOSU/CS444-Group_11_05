@@ -107,7 +107,8 @@ int main(int argc, char *argv[]) {
     int i, numCustomers, numChairs;
     int customers[MAX_CUSTOMERS];
     
-        
+    
+    /*    
     // Check to make sure there are the right number of
     // command line arguments.
     if (argc != 4) {
@@ -131,11 +132,15 @@ int main(int argc, char *argv[]) {
     printf("\nSleepBarber.c\n\n");
     printf("A solution to the sleeping barber problem using semaphores.\n");
     
-
+    // Initialize the random number generator with a new seed.
+    srand48(RandSeed);
+	*/
+	
     // Initialize the numbers array.
     for (i=0; i<MAX_CUSTOMERS; i++) {
 	customers[i] = i;
     }
+    
 		
     // Initialize the semaphores with initial values...
     sem_init(&wait_seats, 0, numChairs);
@@ -148,7 +153,7 @@ int main(int argc, char *argv[]) {
 
     // Create the customers.
     for (i=0; i<numCustomers; i++) {
-	pthread_create(&customer_thread[i], NULL, customer, (void *)&customers[i]);
+	pthread_create(&customer_thread[i], NULL, customer, i);
     }
 
     // Join each of the threads to wait for them to finish.
@@ -163,8 +168,8 @@ int main(int argc, char *argv[]) {
     pthread_join(barber_thread,NULL);	
 }
 
-void *customer(void *number) {
-    int num = *(int *)number;
+void *customer(int number) {
+    
 
     /* Leave for the shop and take some random amount of
    	// time to arrive.
@@ -176,7 +181,7 @@ void *customer(void *number) {
 
     // Wait for space to open up in the waiting room...
     sem_wait(&wait_seats);
-    printf("Customer %d entering waiting room.\n", num);
+    printf("Customer %d entering waiting room.\n", number);
 
     // Wait for the barber chair to become free.
     sem_wait(&barber_chair);
@@ -186,7 +191,7 @@ void *customer(void *number) {
     sem_post(&wait_seats);
 
     // Wake up the barber...
-    printf("Customer %d waking the barber.\n", num);
+    printf("Customer %d waking the barber.\n", number);
     sem_post(&barber_sleep);
 
     // Wait for the barber to finish cutting your hair.
