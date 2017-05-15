@@ -111,7 +111,9 @@ int main(int argc, char *argv[]) {
 
 		// When all of the customers are finished, kill the
 		// barber thread.
+		printf("REACHED\n");
 		allDone = 1;
+		sem_post(&barber);
 		pthread_join(barber_thread, NULL);
 		
 		return 0;
@@ -149,15 +151,8 @@ void *barb(void *b) {
 		while(!allDone){
 				sem_wait(&customer);
 				sem_post(&barber); 
-				
-				if (!allDone) {
-				// This random value may change
 				cutHair();
-				printf("The barber has finished cutting hair.\n");
-				}
-				else {
-					printf("All customers have been serviced.\n");
-				}
+				printf("Barber is waiting for next customer...\n");
 		}
 }
 void cutHair(){
