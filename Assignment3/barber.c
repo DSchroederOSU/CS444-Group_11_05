@@ -133,9 +133,9 @@ void *cust(void *number) {
 		sem_post(&mutex); 
 		
 		sem_post(&customer); 
-		sem_wait(&barber); 
 		printf("Customer %d is going to barber chair...\n", num);
-		getHairCut(num);
+		sem_wait(&barber); 
+		printf("Customer %d is getting a hair cut...\n", n);
 		sem_post(&customerDone); 
 		sem_wait(&barberDone); 
 		sem_wait(&mutex); 
@@ -144,27 +144,19 @@ void *cust(void *number) {
 		
 		}
 }
-void getHairCut(int n){
-		printf("Customer %d is getting a hair cut...\n", n);
-}
 void *barb(void *b) {
 		while(!allDone){
 				sem_wait(&customer);
 				sem_post(&barber); 
-				cutHair();
+				int time = barber_cut_time(3, 7);
+				printf("Barber is cutting hair for %d seconds...\n", time);
+        		sleep(time);
 				sem_wait(&customerDone); 
 				sem_post(&barberDone);
 		}
 		printf("BARBER LOOP EXIT\n");
 }
-void cutHair(){
-		
-		int time = barber_cut_time(3, 7);
-		printf("Barber is cutting hair for %d seconds...\n", time);
-        sleep(time);
-        
 
-}
 int barber_cut_time(int min, int max)
 {
 		int time;
