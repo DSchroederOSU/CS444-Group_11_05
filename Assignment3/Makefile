@@ -44,5 +44,6 @@ barber:
 
 clean:
 	rm -f *.pdf *.ps *.dvi *.out *.log *.aux *.bbl *.blg *.pyg *.o $(TARGET)
+	rm -f barber
 
 .PHONY: all show clean ps pdf showps
