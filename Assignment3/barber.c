@@ -123,7 +123,7 @@ int main(int argc, char *argv[]) {
       	printf("The value of the customerDone is %d\n", value);
       
 		allDone = 1;
-		sem_post(&barber);
+		sem_post(&customerDone);
 		pthread_join(barber_thread, NULL);
 		
 		return 0;
