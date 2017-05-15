@@ -131,9 +131,7 @@ void *cust(void *number) {
 		customers += 1;
 		printf("Customer %d entering waiting room.\n", num);
 		sem_post(&mutex); 
-		
 		sem_post(&customer); 
-		printf("Customer %d is going to barber chair...\n", num);
 		sem_wait(&barber); 
 		printf("Customer %d is getting a hair cut...\n", n);
 		sem_post(&customerDone); 
