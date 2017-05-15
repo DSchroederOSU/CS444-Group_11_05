@@ -124,7 +124,6 @@ int main(int argc, char *argv[]) {
       
 		allDone = 1;
 		sem_post(&customer);
-		sem_post(&customerDone);
 		pthread_join(barber_thread, NULL);
 		
 		return 0;
@@ -156,13 +155,17 @@ void *barb(void *b) {
 		while(!allDone){
 				sem_wait(&customer);
 				sem_post(&barber); 
-				int time = barber_cut_time(3, 7);
-				printf("Barber is cutting hair for %d seconds...\n", time);
-        		sleep(time);
-				sem_wait(&customerDone); 
-				sem_post(&barberDone);
+				if(!allDone){
+					int time = barber_cut_time(3, 7);
+					printf("Barber is cutting hair for %d seconds...\n", time);
+					sleep(time);
+					sem_wait(&customerDone); 
+					sem_post(&barberDone);
+        		}
+        		else
+        			printf("All customers have been serviced...\n", time);		
 		}
-		printf("BARBER LOOP EXIT\n");
+		
 }
 
 int barber_cut_time(int min, int max)
