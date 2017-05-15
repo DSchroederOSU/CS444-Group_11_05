@@ -39,6 +39,9 @@ all: pdf concurrency3
 concurrency3:
 	gcc -std=c99 -lpthread -o concurrency3 concurrency3.c
 
+barber:
+	gcc barber.c -o barber -lpthread -lm
+
 clean:
 	rm -f *.pdf *.ps *.dvi *.out *.log *.aux *.bbl *.blg *.pyg *.o $(TARGET)
 
