@@ -93,9 +93,14 @@ int main(int argc, char *argv[]) {
     	pthread_create(&barber_thread, NULL, barb, NULL);
 
 		// Create the customers.
-		int i;
+		// This is to print the thread number (i.e. Customer# is...).
+    	int i;
+    	for (i=0; i<10; i++) {
+			customers[i] = i;
+    	}
+		
 		for (i=0; i<10; i++) {
-		pthread_create(&customer_thread[i], NULL, cust, NULL);
+		pthread_create(&customer_thread[i], NULL, cust, (void *)&customers[i]);
 		}
 
 		// Join each of the threads to wait for them to finish.
@@ -112,6 +117,7 @@ int main(int argc, char *argv[]) {
 }
 
 void *cust(void *number) {
+		int num = *(int *)number;
 		sem_wait(&mutex); 
 	
 		if(customers == n){
@@ -120,19 +126,19 @@ void *cust(void *number) {
 		}
 		else{
 		customers += 1;
-		printf("Customer %d entering waiting room.\n", customers);
+		printf("Customer %d entering waiting room.\n", num);
 		sem_post(&mutex); 
 		
 		sem_post(&customer); 
 		sem_wait(&barber); 
-
+		printf("Customer %d is going to barber chair...\n", num);
 		getHairCut();
+		
 		}
 }
 void getHairCut(){
 		sem_post(&customerDone); 
 		sem_wait(&barberDone); 
-
 		sem_wait(&mutex); 
 		customers -= 1;
 		sem_post(&mutex); 
@@ -143,6 +149,7 @@ void *barb(void *b) {
 				sem_wait(&customer);
 				sem_post(&barber); 
 				cutHair();
+				printf("Barber is waiting for next customer...\n");
 		}
 }
 void cutHair(){
