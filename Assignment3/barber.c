@@ -59,6 +59,10 @@ def Customer():
 #define MATRIX_A 0x9908b0dfUL
 #define UPPER_MASK 0x80000000UL
 #define LOWER_MASK 0x7fffffffUL
+
+static unsigned long mt[N];
+static int mti = N + 1;
+
 // Function prototypes...
 void *customer(void *num);
 void *barber(void *);
