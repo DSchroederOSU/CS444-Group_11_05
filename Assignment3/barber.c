@@ -54,7 +54,7 @@ void *getHairCut(void *num);
 void *cutHair(void *);
 
 int rdrand(int min, int max);
-void barber_cut_time(int min, int max);
+int barber_cut_time(int min, int max);
 int mt19937(int min, int max);
 void init_genrand(unsigned long s);
 void init_by_array(unsigned long init_key[], int key_length);
@@ -117,10 +117,11 @@ void *getHairCut(void *number) {
 			printf("No seats available, leaving store.\n");
 			sem_post(&mutex); 
 		}
-	
+		else{
 		customers += 1;
+		printf("Customer %d entering waiting room.\n", customers);
 		sem_post(&mutex); 
-
+		
 		sem_post(&customer); 
 		sem_wait(&barber); 
 
@@ -133,6 +134,7 @@ void *getHairCut(void *number) {
 		sem_wait(&mutex); 
 		customers -= 1;
 		sem_post(&mutex); 
+		}
 }
 
 void *cutHair(void *b) {
@@ -140,13 +142,14 @@ void *cutHair(void *b) {
 		sem_post(&barber); 
 		
 		//cutHair ()
-		barber_cut_time(3, 7);
-		
+		int time = barber_cut_time(3, 7);
+		printf("Barber is cutting hair for %d seconds...\n", time);
+        sleep(time);
 		sem_wait(&customerDone); 
 		sem_post(&barberDone); 
 }
 
-void barber_cut_time(int min, int max)
+int barber_cut_time(int min, int max)
 {
 		int time;
         unsigned int eax;
@@ -160,8 +163,7 @@ void barber_cut_time(int min, int max)
         else
                 time = mt19937(min, max);
                 
-        printf("Barber is cutting hair for %d seconds...\n", time);
-        sleep(time);
+       return time;
 }
 
 int rdrand(int min, int max)
@@ -263,7 +265,3 @@ unsigned long genrand_int32(void)
         y ^= (y >> 18);
         return y;
 }
-
-
-
-
