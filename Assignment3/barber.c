@@ -49,6 +49,7 @@ def Customer():
 #include <stdlib.h>
 
 #include <pthread.h>
+#include <immintrin.h>
 #include <semaphore.h>
 
 // The maximum number of customer threads.
@@ -256,7 +257,7 @@ int mt19937(int min, int max)
 		if (min == -1 && max == -1)
 				return (int) genrand_int32();
 		else
-				return (genrand_int32() % (uint64_t)(max - min + 1)) + min;
+				return (genrand_int32() % (unsigned long long)(max - min + 1)) + min;
 
 }
 void init_genrand(unsigned long s)
