@@ -72,7 +72,7 @@ static unsigned long mt[N];
 static int mti = N + 1;
 
 // Function prototypes...
-void *customer(int number);
+void *customer(void *num);
 void *barber(void *);
 
 int rdrand(int min, int max);
@@ -153,7 +153,7 @@ int main(int argc, char *argv[]) {
 
     // Create the customers.
     for (i=0; i<numCustomers; i++) {
-	pthread_create(&customer_thread[i], NULL, customer, i);
+	pthread_create(&customer_thread[i], NULL, customer, (void *)&customers[i]);
     }
 
     // Join each of the threads to wait for them to finish.
@@ -168,8 +168,8 @@ int main(int argc, char *argv[]) {
     pthread_join(barber_thread,NULL);	
 }
 
-void *customer(int number) {
-    
+void *customer(void *number) {
+    int num = *(int *)number;
 
     /* Leave for the shop and take some random amount of
    	// time to arrive.
@@ -181,7 +181,7 @@ void *customer(int number) {
 
     // Wait for space to open up in the waiting room...
     sem_wait(&wait_seats);
-    printf("Customer %d entering waiting room.\n", number);
+    printf("Customer %d entering waiting room.\n", num);
 
     // Wait for the barber chair to become free.
     sem_wait(&barber_chair);
@@ -191,7 +191,7 @@ void *customer(int number) {
     sem_post(&wait_seats);
 
     // Wake up the barber...
-    printf("Customer %d waking the barber.\n", number);
+    printf("Customer %d waking the barber.\n", num);
     sem_post(&barber_sleep);
 
     // Wait for the barber to finish cutting your hair.
@@ -199,7 +199,7 @@ void *customer(int number) {
     
     // Give up the chair.
     sem_post(&barber_chair);
-    printf("Customer %d leaving barber shop.\n", number);
+    printf("Customer %d leaving barber shop.\n", num);
 }
 
 void *barber(void *junk) {
