@@ -149,8 +149,15 @@ void *barb(void *b) {
 		while(!allDone){
 				sem_wait(&customer);
 				sem_post(&barber); 
+				
+				if (!allDone) {
+				// This random value may change
 				cutHair();
-				printf("Barber is waiting for next customer...\n");
+				printf("The barber has finished cutting hair.\n");
+				}
+				else {
+					printf("All customers have been serviced.\n");
+				}
 		}
 }
 void cutHair(){
