@@ -12,7 +12,7 @@
 #define ANSI_COLOR_CYAN    "\x1b[36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
-#define NUM_THREADS 1
+#define NUM_THREADS 4
 
 pthread_mutex_t ins_del_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t sea_del_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -21,9 +21,57 @@ pthread_cond_t stop_search  = PTHREAD_COND_INITIALIZER;
 int DEL_FLAG = 0;
 int NUM_SEARCHES = 0;
 
-void searcher (int * arg)
+struct list_head {
+	int ldata;
+	struct list_head *next;
+	struct list_head *prev;
+} linked_list;
+
+void init_list (struct list_head * lh)
 {
-	int work = *arg;
+	lh->ldata = 0;
+	lh->next = lh;
+	lh->prev = lh;
+}
+
+struct list_head * search (struct list_head * lh, int data)
+{
+	struct list_head * item = lh->next;
+
+	while(item != lh) {
+		if (item->ldata == data)
+			return item;
+
+		item = item->next;
+	}
+	return NULL;
+}
+
+void insert(struct list_head * lh, int data)
+{
+	struct list_head * newhead = malloc(sizeof(struct list_head));
+	newhead->ldata = data;
+	newhead->next = lh->next;
+	newhead->prev = lh;
+	lh->next->prev = newhead;
+	lh->next = newhead;
+}
+
+int delete(struct list_head * lh)
+{
+	if (lh == NULL || lh == &linked_list)
+		return 1;
+
+	lh->prev->next = lh->next;
+	lh->next->prev = lh->prev;
+
+	free(lh);
+	return 0;
+}
+
+void* searcher (void * arg)
+{
+	int data = *(int*)arg;
 
 	pthread_mutex_lock(&sea_del_mutex);
 	if (DEL_FLAG)
@@ -34,37 +82,48 @@ void searcher (int * arg)
 
 
 	// Search for item here
-	printf(ANSI_COLOR_CYAN "Searcher thread is searching for %d seconds (%d threads total)\n" ANSI_COLOR_RESET, work, NUM_SEARCHES); 
+	printf(ANSI_COLOR_CYAN "Searcher thread is searching for %d. (%d searchers total)\n" ANSI_COLOR_RESET, data, NUM_SEARCHES); 
 	fflush(stdout);
-	sleep(work);
+
+	struct list_head * result = search(&linked_list, data);
 
 	pthread_mutex_lock(&sea_del_mutex);
 	NUM_SEARCHES--;
 	pthread_mutex_unlock(&sea_del_mutex);
 
-	printf(ANSI_COLOR_CYAN "Searcher thread is done (%d remaining).\n" ANSI_COLOR_RESET, NUM_SEARCHES); 
-	fflush(stdout);
+	if (result == NULL) {
+		printf(ANSI_COLOR_CYAN "Searcher thread is done, data %d not found. (%d searchers left)\n" ANSI_COLOR_RESET, data, NUM_SEARCHES);
+		fflush(stdout);
+	}
+	else {
+		printf(ANSI_COLOR_CYAN "Searcher thread is done, data %d found at address %p. (%d searchers left)\n" ANSI_COLOR_RESET, data, (void*)result, NUM_SEARCHES);
+		fflush(stdout);
+	}
+
+	return NULL;
 }
 
-void inserter(int * arg)
+void* inserter(void * arg)
 {
-	int work = *arg;
+	int data = *(int*)arg;
 	pthread_mutex_lock(&ins_del_mutex);
 
 	// Insert an item here	
-	printf(ANSI_COLOR_GREEN "Inserter thread is inserting for %d seconds\n" ANSI_COLOR_RESET, work); 
+	printf(ANSI_COLOR_GREEN "Inserter thread is inserting data %d\n" ANSI_COLOR_RESET, data); 
 	fflush(stdout);
-	sleep(work);
+	
+	insert(&linked_list, data);
 
 	pthread_mutex_unlock(&ins_del_mutex);
 
 	printf(ANSI_COLOR_GREEN "Inserter thread is done.\n" ANSI_COLOR_RESET);
 	fflush(stdout);
+	return NULL;
 }
 
-void deleter(int * arg)
+void* deleter(void * arg)
 {
-	int work = *arg;
+	int data = *(int *) arg;
 	pthread_mutex_lock(&ins_del_mutex);
 	DEL_FLAG = 1;
 	sleep(1);
@@ -75,9 +134,10 @@ void deleter(int * arg)
 	}
 
 	// Delete an item here
-	printf(ANSI_COLOR_YELLOW "Deleter thread is deleting for %d seconds\n" ANSI_COLOR_RESET, work); 
+	printf(ANSI_COLOR_YELLOW "Deleter thread is deleting item with data %d\n" ANSI_COLOR_RESET, data); 
 	fflush(stdout);
-	sleep(work);
+
+	delete(search(&linked_list, data));
 	
 	DEL_FLAG = 0;
 	pthread_cond_broadcast(&stop_search);
@@ -85,40 +145,63 @@ void deleter(int * arg)
 
 	printf(ANSI_COLOR_YELLOW "Deleter thread is done\n" ANSI_COLOR_RESET);
 	fflush(stdout);
+	return NULL;
 }
 
-void rand_test()
+
+void set_test()
 {
-	pthread_t sea[NUM_THREADS*5];
+	pthread_t sea[NUM_THREADS];
 	pthread_t ins[NUM_THREADS];
 	pthread_t del[NUM_THREADS];
 
-	int sea_work[NUM_THREADS*5];
-	int ins_work[NUM_THREADS];
-	int del_work[NUM_THREADS];
-
-	srand(time(NULL));
+	int sea_data[NUM_THREADS];
+	int ins_data[NUM_THREADS];
+	int del_data[NUM_THREADS];
 
 	for (int i = 0; i < NUM_THREADS; i++) {
-		ins_work[i] = rand() % 10 + 2;
-		pthread_create(&ins[i], NULL, (void *) inserter, (void *) &ins_work[i]);
-	}
-	for (int i = 0; i < NUM_THREADS; i++) {
-		del_work[i] = rand() % 10 + 2;
-		pthread_create(&del[i], NULL, (void *) deleter, (void *) &del_work[i]);
-	}
-	for (int i = 0; i < 5*NUM_THREADS; i++) {
-		sea_work[i] = rand() % 10 * 2;
-		pthread_create(&sea[i], NULL, (void *) searcher, (void *) &sea_work[i]);
-		sleep(1);
+		ins_data[i] = i+100;
+		pthread_create(&ins[i], NULL, (void *) inserter, (void *) &ins_data[i]);
 	}
 
-	printf(ANSI_COLOR_RED "--- ALL THREADS STARTED ---\n" ANSI_COLOR_RESET);
+	printf(ANSI_COLOR_RED "--- INSERT THREADS STARTED ---\n" ANSI_COLOR_RESET);
+	fflush(stdout);
+
+	for (int i = 0; i < NUM_THREADS; i++) {
+		sea_data[i] = i+100;
+		pthread_create(&sea[i], NULL, (void *) searcher, (void *) &sea_data[i]);
+	}
+
+	printf(ANSI_COLOR_RED "--- SEARCH THREADS STARTED ---\n" ANSI_COLOR_RESET);
 	fflush(stdout);
 
 	for (int i = 0; i < NUM_THREADS; i++)
+		pthread_join(sea[i], NULL);
+	for (int i = 0; i < NUM_THREADS; i++)
 		pthread_join(ins[i], NULL);
-	for (int i = 0; i < 5*NUM_THREADS; i++)
+
+	printf(ANSI_COLOR_RED "--- INSERT/SEARCH THREADS JOINED ---\n--- RESTARTING SEARCH ---\n" ANSI_COLOR_RESET);
+	fflush(stdout);
+
+	for (int i = 0; i < NUM_THREADS; i++) {
+		sea_data[i] = i+100;
+		pthread_create(&sea[i], NULL, (void *) searcher, (void *) &sea_data[i]);
+	}
+
+	printf(ANSI_COLOR_RED "--- SEARCH THREADS STARTED ---\n" ANSI_COLOR_RESET);
+	fflush(stdout);
+
+
+	for (int i = 0; i < NUM_THREADS; i++) {
+		del_data[i] = i+100;
+		pthread_create(&del[i], NULL, (void *) deleter, (void *) &del_data[i]);
+	}
+
+	printf(ANSI_COLOR_RED "--- DELETE THREADS STARTED ---\n" ANSI_COLOR_RESET);
+	fflush(stdout);
+
+
+	for (int i = 0; i < NUM_THREADS; i++)
 		pthread_join(sea[i], NULL);
 	for (int i = 0; i < NUM_THREADS; i++)
 		pthread_join(del[i], NULL);
@@ -127,59 +210,9 @@ void rand_test()
 	fflush(stdout);
 }
 
-void set_test()
-{
-	pthread_t sea[NUM_THREADS*4];
-	pthread_t ins[NUM_THREADS*4];
-	pthread_t del[NUM_THREADS*4];
-
-	int sea_work[NUM_THREADS*4];
-	int ins_work[NUM_THREADS*4];
-	int del_work[NUM_THREADS*4];
-
-	for (int i = 0; i < 2*NUM_THREADS; i++) {
-		ins_work[i] = 5;
-		pthread_create(&ins[i], NULL, (void *) inserter, (void *) &ins_work[i]);
-	}
-	for (int i = 0; i < 2*NUM_THREADS; i++) {
-		del_work[i] = 5;
-		pthread_create(&del[i], NULL, (void *) deleter, (void *) &del_work[i]);
-	}
-	for (int i = 2*NUM_THREADS; i < 4*NUM_THREADS; i++) {
-		ins_work[i] = 5;
-		pthread_create(&ins[i], NULL, (void *) inserter, (void *) &ins_work[i]);
-	}
-	for (int i = 2*NUM_THREADS; i < 4*NUM_THREADS; i++) {
-		del_work[i] = 5;
-		pthread_create(&del[i], NULL, (void *) deleter, (void *) &del_work[i]);
-	}
-
-	printf(ANSI_COLOR_RED "--- NON-SEARCH THREADS STARTED ---\n" ANSI_COLOR_RESET);
-	printf(ANSI_COLOR_RED "Creating new search thread every 2 seconds\n" ANSI_COLOR_RESET);
-	fflush(stdout);
-
-	for (int j = 0; j < 4; j++) {
-		for (int i = 0; i < 4*NUM_THREADS; i++) {
-			sea_work[i] = 4;
-			pthread_create(&sea[i], NULL, (void *) searcher, (void *) &sea_work[i]);
-			sleep(2);
-		}
-		for (int i = 0; i < 4*NUM_THREADS; i++)
-			pthread_join(sea[i], NULL);
-	}
-
-
-	for (int i = 0; i < 4*NUM_THREADS; i++)
-		pthread_join(ins[i], NULL);
-	for (int i = 0; i < 4*NUM_THREADS; i++)
-		pthread_join(del[i], NULL);
-
-	printf(ANSI_COLOR_RED "--- ALL THREADS JOINED ---\n" ANSI_COLOR_RESET);
-	fflush(stdout);
-}
-
 int main()
 {
+	init_list(&linked_list);
 	//rand_test();
 	set_test();
 	return 0;
