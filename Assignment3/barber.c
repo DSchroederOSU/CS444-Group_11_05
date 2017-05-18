@@ -111,19 +111,9 @@ int main(int argc, char *argv[]) {
 
 		// When all of the customers are finished, kill the
 		// barber thread.
-		printf("Reached\n");
-		int value; 
-      	sem_getvalue(&barber, &value); 
-      	printf("The value of the barber is %d\n", value);
-      	sem_getvalue(&customer, &value); 
-      	printf("The value of the customer is %d\n", value);
-      	sem_getvalue(&barberDone, &value); 
-      	printf("The value of the barberDone is %d\n", value);
-      	sem_getvalue(&customerDone, &value); 
-      	printf("The value of the customerDone is %d\n", value);
-      
+
 		allDone = 1;
-		sem_post(&customer);
+		sem_post(&customer); //wake barber to allow exit
 		pthread_join(barber_thread, NULL);
 		
 		return 0;
