@@ -8,7 +8,7 @@ all: prog
 CC = gcc
 CFLAGS = -Wall -std=gnu99 -openmp -O3 -g -I.
 #overkill on the flags, but that doesn't hurt anything
-LDFLAGS = -lrt -lpthread 
+LDFLAGS = -lm -lpthread 
 CTARGET = Prog
 CSOURCE = c3.c
 CINCLUDES = 

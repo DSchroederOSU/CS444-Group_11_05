@@ -49,10 +49,10 @@
 {\scshape\Large CS 444 Operating Systems II\par}
 {\scshape\Large Spring 2017\par}
 \vspace{1cm}
-{\huge\bfseries Assignment II: I/O Elevators\par}
+{\huge\bfseries Assignment II: Encrypted Block Device\par}
 \vspace{2cm}
 \begin{abstract}
-This document is a summary of Assignment 2 for CS 444 Operating Systems II at Oregon State University Spring 2017. This document includes the design and implementation of the kernel assignment, responses to the reflection questions for the kernel and concurrency assignments, and a work log.
+This document is a summary of Assignment 3 for CS 444 Operating Systems II at Oregon State University Spring 2017. This document includes the design and implementation of the kernel assignment to implement an Encrypted Block Device, responses to the design and implimenation questions for the kernel and concurrency assignments, and a work log.
 \end{abstract}
 \end{titlepage}
 
@@ -64,7 +64,7 @@ This document is a summary of Assignment 2 for CS 444 Operating Systems II at Or
 
 \medskip
 
-\noindent The design for implementing our scheduling algorithm was to modify the existing noop ioscheduler so that instead of queueing and dispatching requests first come first served with no consideration of sector number it instead followed the C-LOOK method of servicing requests in sector order until there are no more in the queue the direction it is looking and then starts over at the beginning of the queue. To achieve this behavior all that was required was to change the add behavior of the noop scheduler. Requests were originally simply added to the end of the queue and the dispatch function serviced them from the front. We changed the queue to use an insertion sort to maintain pending requests in order by sector number.\par
+\noindent For our Encrypted Block Device implementation, we used a pre-established sbull.c driver example from {https://github.com/duxing2007/ldd3-examples-3.x/blob/master/sbull/sbull.c} as a basis for the driver. From there we implemented data encryption through...
 
 \bigskip
 
@@ -73,8 +73,7 @@ This document is a summary of Assignment 2 for CS 444 Operating Systems II at Or
 
 \medskip
 
-\noindent The point of this assignment was for us to understand how various Linux schedulers operate and how their behavior can be modified based on what approach is most efficient for the current system. It also got us familiar with how the data structures used by the schedulers are designed and how they interact, as well as how linked lists work in Linux. The assignment also gave us experience in many technical aspects such as coding and compiling kernel files, how to instruct qemu to use those files on the VM, and how to deploy our changes to another system using a patch file.\par
-
+\noindent The point of this assignment was to learn how to use an API from the Linux kernel that has poor documentation and design an implementation based off of examples and outside resources.
 \bigskip
 
 \noindent\textbf{How did you personally approach the problem?}
@@ -82,12 +81,12 @@ This document is a summary of Assignment 2 for CS 444 Operating Systems II at Or
 
 \medskip
 
-\noindent We approached the problem of changing the noop scheduler to use C-LOOK by first researching how the behavior of the two differed, and how each achieved their behavior by how they added requests to the queue and dispatched them. Seeing that noop merely added new requests to the queue as they came in and dispatched them from the front, the original idea was to change the add function to use insertion sort so that the request queue would be maintained in order by request sector, then add an explicit elevator algoritm to the dispatch function which would service requests in one direction until it reached the end of the queue and then return to the start. However after further analysis we realized that only the first modification would actually be required. If the request adder maintained the queue in sorted order, then the original behavior of the dispatcher of servicing requests from one side of the list would result in the same behavior as the elevator naturally with no new code needed. This is because the default behavior of the dispatcher determines its list's next and previous nodes from a designated sentinal node. By doing any list traversing we required through this sentinel the resulting list would maintain the proper context in regard to the requests viewed by the dispatcher.\par
+\noindent We used an sbull.c implementation of a disc driver we found that has been updated to work with Linux 3.x systems. We {Add encryption} 
 \medskip
 
 \medskip
 
-\noindent The desired change in behavior was achieved by modifying the additions of new requests to the queue in the add\_request function. Instead of always just adding the request to the end, now the function traverses through the list past all the pending requests with a sector number lower than the sector of the request it is adding. It stops when the next request's sector is higher than the new one, backs up one element and adds the new request after that previous position, resulting in a sorted queue. If, while traversing the list of requests, it happens that the sector it is checking has suddenly become smaller than the sector of the next request this indicates that the loop has checked each request in the queue and is about to circle back to the other end, which means the sector of the new request is smaller than all others in the list and it should be added to the front.\par
+\noindent {Desired result}
 
 \bigskip
 
@@ -96,7 +95,7 @@ This document is a summary of Assignment 2 for CS 444 Operating Systems II at Or
 
 \medskip
 
-\noindent We ensured the new behavior was correct by adding a printk statement to the request add function and one to the disptach function which send the sector numbers being added and dispatched to a log file. Then we compiled our scheduler and set it to be the VM's default. We ran a script on the VM that randomly generates a series of I/O requests so the affected sectors are not in order, then checked the contents of the log. We saw that the sector numbers for the adds were jumbled, but they were dispatched in order. This shows that our function is working as intended, sorting requests as it adds them to the queue so that it dispatches all in one direction.\par
+\noindent After designing our sbull.c driver, we added it to the .config file and used the insmod command to install the module. We then created a file system on the module with "mkfs -t ext2 /dev/<dev-name>" and mounted it with "mount -t ext2 /dev/<dev-name> /mnt" for read/write abilities. From here, we manipulated the filesystem and used a series of printk's to ensure that the data being written and read was encrypted based on the crypt key command parameter passed.
 
 \bigskip
 
@@ -105,7 +104,7 @@ This document is a summary of Assignment 2 for CS 444 Operating Systems II at Or
 
 \medskip
 
-\noindent We learned how the different I/O schedulers operate, both in concept and in practice, the behavior of various elevator algorithms and the bennefits of their differences, and how to modify a scheduler's behavior to change the order in which it stores and services requests. We also necessarily learned about various kernel concepts in order to achieve this, including how linked lists are represented and interacted with, and how to compile and apply modifications to kernel files.\par\pagebreak
+\noindent everything.
 
 \section{Concurrency Assignment}
 \bigskip
@@ -115,7 +114,7 @@ This document is a summary of Assignment 2 for CS 444 Operating Systems II at Or
 
 \medskip
 
-\noindent The main point of the assignment was to gain more experience with dealing with potential race conditions and how to allocate processing time to different threads. To deal with with race conditions we were expected to write a semaphore implementation or to use mutexes to make sure critical variables are only being manipulated by a single thread at a time. This assignment was also about giving unique information to different threads, as each had to be aware which fork was to the "left" and "right" of each thread.\par
+\noindent The main point of this concurrency assignment was to 
 
 \bigskip
 
