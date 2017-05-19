@@ -34,14 +34,12 @@ int LIST_SIZE = 0;
 struct list_head {
 	int ldata;
 	struct list_head *next;
-	struct list_head *prev;
 } linked_list;
 
 void init_list (struct list_head * lh)
 {
 	lh->ldata = 0;
 	lh->next = lh;
-	lh->prev = lh;
 }
 
 void display(struct list_head *r)
@@ -69,25 +67,42 @@ struct list_head * search (struct list_head * lh, int data)
 
 void insert(struct list_head * lh, int data)
 {
-	struct list_head * newhead = malloc(sizeof(struct list_head));
+	struct list_head * newhead;
+	struct list_head * ins_ptr = lh;
+
+	while (ins_ptr->next != lh)
+		ins_ptr = ins_ptr->next;
+	
+	newhead = malloc(sizeof(struct list_head));
 	newhead->ldata = data;
-	newhead->next = lh->next;
-	newhead->prev = lh;
-	lh->next->prev = newhead;
-	lh->next = newhead;
+	newhead->next = ins_ptr->next;
+	ins_ptr->next = newhead;
+
 	LIST_SIZE++;
 	display(&linked_list);
 }
 
-int delete(struct list_head * lh)
+int delete(struct list_head * lh, int data)
 {
-	if (lh == NULL || lh == &linked_list)
+	struct list_head * item = lh;
+	struct list_head * del_ptr;
+
+	while(item->next != lh) {
+		if (item->next->ldata == data)
+			break;
+
+		item = item->next;
+	}
+
+	if (item->next == lh) {
+		printf("Could not delete: Item with data %d not found.\n", data);
 		return 1;
+	}
 
-	lh->prev->next = lh->next;
-	lh->next->prev = lh->prev;
+	del_ptr = item->next;
+	item->next = del_ptr->next;
 
-	free(lh);
+	free(del_ptr);
 	LIST_SIZE--;
 	display(&linked_list);
 	return 0;
@@ -152,7 +167,7 @@ void* inserter(void * arg)
 	fflush(stdout);
 	
 	sleep(1);
-	insert(linked_list.prev, data);
+	insert(&linked_list, data);
 
 	INS_FLAG = 0;
 	pthread_mutex_unlock(&ins_del_mutex);
@@ -192,7 +207,7 @@ void* deleter(void * arg)
 	printf(ANSI_COLOR_YELLOW "Deleter thread is deleting item with data %d\n" ANSI_COLOR_RESET, data); 
 	fflush(stdout);
 
-	delete(search(&linked_list, data));
+	delete(&linked_list, data);
 	
 	DEL_FLAG = 0;
 	pthread_cond_broadcast(&stop_search);
