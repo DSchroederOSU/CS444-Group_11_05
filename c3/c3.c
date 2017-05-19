@@ -152,7 +152,7 @@ void* inserter(void * arg)
 	fflush(stdout);
 	
 	sleep(1);
-	insert(&linked_list, data);
+	insert(linked_list.prev, data);
 
 	INS_FLAG = 0;
 	pthread_mutex_unlock(&ins_del_mutex);
