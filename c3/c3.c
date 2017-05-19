@@ -24,7 +24,7 @@
 
 pthread_mutex_t ins_del_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t sea_del_mutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_cond_t stop_search  = PTHREAD_COND_INITIALIZER;
+pthread_cond_t stop_search = PTHREAD_COND_INITIALIZER;
 
 int DEL_FLAG = 0;
 int INS_FLAG = 0;
@@ -36,7 +36,7 @@ struct list_head {
 	struct list_head *next;
 } linked_list;
 
-void init_list (struct list_head * lh)
+void init_list (struct list_head *lh)
 {
 	lh->ldata = 0;
 	lh->next = lh;
@@ -52,9 +52,9 @@ void display(struct list_head *r)
 	printf("\n");
 }
 
-struct list_head * search (struct list_head * lh, int data)
+struct list_head * search(struct list_head * lh, int data)
 {
-	struct list_head * item = lh->next;
+	struct list_head *item = lh->next;
 
 	while(item != lh) {
 		if (item->ldata == data)
@@ -65,10 +65,10 @@ struct list_head * search (struct list_head * lh, int data)
 	return NULL;
 }
 
-void insert(struct list_head * lh, int data)
+void insert(struct list_head *lh, int data)
 {
-	struct list_head * newhead;
-	struct list_head * ins_ptr = lh;
+	struct list_head *newhead;
+	struct list_head *ins_ptr = lh;
 
 	while (ins_ptr->next != lh)
 		ins_ptr = ins_ptr->next;
@@ -82,10 +82,10 @@ void insert(struct list_head * lh, int data)
 	display(&linked_list);
 }
 
-int delete(struct list_head * lh, int data)
+int delete(struct list_head *lh, int data)
 {
-	struct list_head * item = lh;
-	struct list_head * del_ptr;
+	struct list_head *item = lh;
+	struct list_head *del_ptr;
 
 	while(item->next != lh) {
 		if (item->next->ldata == data)
@@ -108,7 +108,7 @@ int delete(struct list_head * lh, int data)
 	return 0;
 }
 
-void* searcher (void * arg)
+void* searcher (void *arg)
 {
 	int data = *(int*)arg;
 
@@ -128,7 +128,7 @@ void* searcher (void * arg)
 	fflush(stdout);
 
 	sleep(1);
-	struct list_head * result = search(&linked_list, data);
+	struct list_head *result = search(&linked_list, data);
 
 	pthread_mutex_lock(&sea_del_mutex);
 	NUM_SEARCHES--;
@@ -146,7 +146,7 @@ void* searcher (void * arg)
 	return NULL;
 }
 
-void* inserter(void * arg)
+void* inserter(void *arg)
 {
 	int data = *(int*)arg;
 	int flag = 0;
@@ -177,9 +177,9 @@ void* inserter(void * arg)
 	return NULL;
 }
 
-void* deleter(void * arg)
+void* deleter(void *arg)
 {
-	int data = *(int *) arg;
+	int data = *(int *)arg;
 	int flag = 0;
 	if (INS_FLAG || DEL_FLAG) {
 		printf(ANSI_COLOR_RED "Deleter thread is blocked.\n" ANSI_COLOR_RESET);
