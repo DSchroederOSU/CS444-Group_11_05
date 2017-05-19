@@ -35,8 +35,8 @@
   urlcolor = black,
   pdfauthor = {\name},
   pdfkeywords = {cs444},
-  pdftitle = {CS 444 Assignment II: I/O Elevators},
-  pdfsubject = {CS 444 Assignment 2},
+  pdftitle = {CS 444 Assignment III: I/O Elevators},
+  pdfsubject = {CS 444 Assignment 3},
   pdfpagemode = UseNone
 }
 
@@ -49,7 +49,7 @@
 {\scshape\Large CS 444 Operating Systems II\par}
 {\scshape\Large Spring 2017\par}
 \vspace{1cm}
-{\huge\bfseries Assignment II: Encrypted Block Device\par}
+{\huge\bfseries Assignment III: Encrypted Block Device\par}
 \vspace{2cm}
 \begin{abstract}
 This document is a summary of Assignment 3 for CS 444 Operating Systems II at Oregon State University Spring 2017. This document includes the design and implementation of the kernel assignment to implement an Encrypted Block Device, responses to the design and implimenation questions for the kernel and concurrency assignments, and a work log.
@@ -95,7 +95,7 @@ This document is a summary of Assignment 3 for CS 444 Operating Systems II at Or
 
 \medskip
 
-\noindent After designing our sbull.c driver, we added it to the .config file and used the insmod command to install the module. We then created a file system on the module with "mkfs -t ext2 /dev/<dev-name>" and mounted it with "mount -t ext2 /dev/<dev-name> /mnt" for read/write abilities. From here, we manipulated the filesystem and used a series of printk's to ensure that the data being written and read was encrypted based on the crypt key command parameter passed.
+\noindent After designing our sbull.c driver, we added it to the .config file and used the insmod command to install the module. We then created a file system on the module with ``mkfs -t ext2 /dev/\textless dev-name\textgreater'' and mounted it with ``mount -t ext2 /dev/\textless dev-name\textgreater /mnt'' for read/write abilities. From here, we manipulated the filesystem and used a series of printk's to ensure that the data being written and read was encrypted based on the crypt key command parameter passed.
 
 \bigskip
 
@@ -123,17 +123,7 @@ This document is a summary of Assignment 3 for CS 444 Operating Systems II at Or
 
 \medskip
 
-\noindent To keep track of which forks were being used we made a global array that would hold a boolean value to indicate whether the fork was in use or not. We also created a struct for each thread that would contain the index of the left fork, the index of the right fork, and the name (ID) of the thread. This struct was passed into the thread starting point when calling the \texttt{pthread\_create()} function.\par
-\medskip
-
-\medskip
-
-\noindent When the thread starts, it generates a random amount of thinking time and sleeps for that amount of time. Then, it generates a random eating time and checks if the forks adjacent to it are available to start eating. If not, it waits until they are. The thread "eats" for the amount of time specified and when done it releases the forks for other threads to use.\par
-\medskip
-
-\medskip
-
-\noindent Each time the forks array is about to experience a read or write, a global mutex is locked to prevent any race conditions. If the mutex is already locked, then the thread will wait until available according to POSIX implementation.\par
+\noindent info
 
 \bigskip
 
@@ -142,8 +132,7 @@ This document is a summary of Assignment 3 for CS 444 Operating Systems II at Or
 
 \medskip
 
-\noindent We ensured that our implementation was correct by printing all the actions of each thread directly to standard output so we can clearly see who is thinking or eating and for how long. Furthermore, we print out the state of each fork (available or in use). Finally, we also print thinking times and eating times. We ensured there was never deadlock or starvation by letting the program run for over an hour and observing that all five threads continued functioning as expected the whole time.\par
-
+\noindent info
 \bigskip
 
 \noindent\textbf{What did you learn?}
@@ -151,17 +140,9 @@ This document is a summary of Assignment 3 for CS 444 Operating Systems II at Or
 
 \medskip
 
-\noindent We learned how to properly pass variables when creating a thread. Although only a single variable of type \texttt{(void *)} can be passed, a structure can be created and typecast into a void pointer which lets us pass in more arguments. Furthermore, the argument and return type of the function need to be explicitly defined as void pointer.\par
+\noindent info
 \medskip
 
-\medskip
-
-\noindent We also learned that the \texttt{memset()} function throws out the 'volatile' tag if being used on a volatile variable. I kept using \texttt{memset()} but made sure the compiler optimizations were disabled (just in case) since we are working with a few global variables.\par
-\medskip
-
-\medskip
-
-\noindent Finally, we learned that it is a good habit to also lock mutexes when reading a shared variable, otherwise you might be reading some wrong information. It's hard to predict when the data will change, and it's safer to freeze the state of critical variables when reading so that they are in the same "time state".\par\pagebreak
 
 \section{Version Control Log}
 \bigskip

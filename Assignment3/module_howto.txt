@@ -18,3 +18,7 @@ Then, mount it to a directory (we usually use /mnt):
 
 where <dev-name> was the name of the device.
 You can now navigate to /mnt to write and read from the module
+
+
+
+Open

@@ -114,9 +114,9 @@ void* searcher (void *arg)
 
 	pthread_mutex_lock(&sea_del_mutex);
 	if (DEL_FLAG) {
-		printf(ANSI_COLOR_RED "Searcher thread is blocked.\n" ANSI_COLOR_RESET);
+		printf(ANSI_COLOR_RED "Searcher[%d] thread is blocked.\n" ANSI_COLOR_RESET, (data-100));
 		pthread_cond_wait(&stop_search, &sea_del_mutex);
-		printf(ANSI_COLOR_RED "Resuming searcher thread.\n" ANSI_COLOR_RESET);
+		printf(ANSI_COLOR_RED "Resuming searcher[%d] thread.\n" ANSI_COLOR_RESET, (data-100));
 	}
 
 	NUM_SEARCHES++;
@@ -124,7 +124,7 @@ void* searcher (void *arg)
 
 
 	// Search for item here
-	printf(ANSI_COLOR_CYAN "Searcher thread is searching for %d. (%d searchers total)\n" ANSI_COLOR_RESET, data, NUM_SEARCHES); 
+	printf(ANSI_COLOR_CYAN "Searcher[%d] thread is searching for %d. (%d searchers total)\n" ANSI_COLOR_RESET, (data-100), data, NUM_SEARCHES); 
 	fflush(stdout);
 
 	sleep(1);
@@ -135,11 +135,11 @@ void* searcher (void *arg)
 	pthread_mutex_unlock(&sea_del_mutex);
 
 	if (result == NULL) {
-		printf(ANSI_COLOR_CYAN "Searcher thread is done, data %d not found. (%d searchers left)\n" ANSI_COLOR_RESET, data, NUM_SEARCHES);
+		printf(ANSI_COLOR_CYAN "Searcher[%d] thread is done, data %d not found. (%d searchers left)\n" ANSI_COLOR_RESET, (data-100), data, NUM_SEARCHES);
 		fflush(stdout);
 	}
 	else {
-		printf(ANSI_COLOR_CYAN "Searcher thread is done, data %d found at address %p. (%d searchers left)\n" ANSI_COLOR_RESET, data, (void*)result, NUM_SEARCHES);
+		printf(ANSI_COLOR_CYAN "Searcher[%d] thread is done, data %d found at address %p. (%d searchers left)\n" ANSI_COLOR_RESET, (data-100), data, (void*)result, NUM_SEARCHES);
 		fflush(stdout);
 	}
 
@@ -152,7 +152,7 @@ void* inserter(void *arg)
 	int flag = 0;
 
 	if (INS_FLAG || DEL_FLAG) {
-		printf(ANSI_COLOR_RED "Inserter thread is blocked.\n" ANSI_COLOR_RESET);
+		printf(ANSI_COLOR_RED "Inserter[%d] thread is blocked.\n" ANSI_COLOR_RESET, (data-100));
 		flag = 1;
 	}
 
@@ -160,10 +160,10 @@ void* inserter(void *arg)
 	INS_FLAG = 1;
 
 	if (flag)
-		printf(ANSI_COLOR_RED "Resuming Inserter thread.\n" ANSI_COLOR_RESET);
+		printf(ANSI_COLOR_RED "Resuming Inserter[%d] thread.\n" ANSI_COLOR_RESET, (data-100));
 
 	// Insert an item here	
-	printf(ANSI_COLOR_GREEN "Inserter thread is inserting data %d\n" ANSI_COLOR_RESET, data); 
+	printf(ANSI_COLOR_GREEN "Inserter[%d] thread is inserting data %d\n" ANSI_COLOR_RESET, (data-100), data); 
 	fflush(stdout);
 	
 	sleep(1);
@@ -172,7 +172,7 @@ void* inserter(void *arg)
 	INS_FLAG = 0;
 	pthread_mutex_unlock(&ins_del_mutex);
 
-	printf(ANSI_COLOR_GREEN "Inserter thread is done.\n" ANSI_COLOR_RESET);
+	printf(ANSI_COLOR_GREEN "Inserter[%d] thread is done.\n" ANSI_COLOR_RESET, (data-100));
 	fflush(stdout);
 	return NULL;
 }
@@ -182,7 +182,7 @@ void* deleter(void *arg)
 	int data = *(int *)arg;
 	int flag = 0;
 	if (INS_FLAG || DEL_FLAG) {
-		printf(ANSI_COLOR_RED "Deleter thread is blocked.\n" ANSI_COLOR_RESET);
+		printf(ANSI_COLOR_RED "Deleter[%d] thread is blocked.\n" ANSI_COLOR_RESET, (data-100));
 		flag =1;
 	}
 	pthread_mutex_lock(&ins_del_mutex);
@@ -190,7 +190,7 @@ void* deleter(void *arg)
 	sleep(1);
 	int var = NUM_SEARCHES;
 	if (var && !flag) {
-		printf(ANSI_COLOR_RED "Deleter thread is blocked.\n" ANSI_COLOR_RESET);
+		printf(ANSI_COLOR_RED "Deleter[%d] thread is blocked.\n" ANSI_COLOR_RESET, (data-100));
 		flag =1;
 	}
 
@@ -201,10 +201,10 @@ void* deleter(void *arg)
 	}
 
 	if (flag)
-		printf(ANSI_COLOR_RED "Resuming deleter thread.\n" ANSI_COLOR_RESET);
+		printf(ANSI_COLOR_RED "Resuming deleter[%d] thread.\n" ANSI_COLOR_RESET, (data-100));
 
 	// Delete an item here
-	printf(ANSI_COLOR_YELLOW "Deleter thread is deleting item with data %d\n" ANSI_COLOR_RESET, data); 
+	printf(ANSI_COLOR_YELLOW "Deleter[%d] thread is deleting item with data %d\n" ANSI_COLOR_RESET, (data-100), data); 
 	fflush(stdout);
 
 	delete(&linked_list, data);
@@ -213,7 +213,7 @@ void* deleter(void *arg)
 	pthread_cond_broadcast(&stop_search);
 	pthread_mutex_unlock(&ins_del_mutex);
 
-	printf(ANSI_COLOR_YELLOW "Deleter thread is done\n" ANSI_COLOR_RESET);
+	printf(ANSI_COLOR_YELLOW "Deleter[%d] thread is done\n" ANSI_COLOR_RESET, (data-100));
 	fflush(stdout);
 	return NULL;
 }
