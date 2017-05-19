@@ -1,3 +1,11 @@
+/*
+ * Concurrency Assignment 3
+ * Operating Systems II
+ * Luke Morrison, Daniel Schroeder, Brian Ozarowicz
+ * Group 11-05
+ * Spring 2017
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -21,6 +29,7 @@ pthread_cond_t stop_search  = PTHREAD_COND_INITIALIZER;
 int DEL_FLAG = 0;
 int INS_FLAG = 0;
 int NUM_SEARCHES = 0;
+int LIST_SIZE = 0;
 
 struct list_head {
 	int ldata;
@@ -33,6 +42,16 @@ void init_list (struct list_head * lh)
 	lh->ldata = 0;
 	lh->next = lh;
 	lh->prev = lh;
+}
+
+void display(struct list_head *r)
+{
+	r = r->next;
+	for (int i = LIST_SIZE; i != 0; i--) {
+		printf("%d ", r->ldata);
+		r = r->next;
+     }
+	printf("\n");
 }
 
 struct list_head * search (struct list_head * lh, int data)
@@ -56,6 +75,8 @@ void insert(struct list_head * lh, int data)
 	newhead->prev = lh;
 	lh->next->prev = newhead;
 	lh->next = newhead;
+	LIST_SIZE++;
+	display(&linked_list);
 }
 
 int delete(struct list_head * lh)
@@ -67,6 +88,8 @@ int delete(struct list_head * lh)
 	lh->next->prev = lh->prev;
 
 	free(lh);
+	LIST_SIZE--;
+	display(&linked_list);
 	return 0;
 }
 
