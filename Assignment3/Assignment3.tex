@@ -32,7 +32,7 @@
 %% The following metadata will show up in the PDF properties
 \hypersetup{
   colorlinks = true,
-  urlcolor = black,
+  urlcolor = red,
   pdfauthor = {\name},
   pdfkeywords = {cs444},
   pdftitle = {CS 444 Assignment III: I/O Elevators},
@@ -64,7 +64,7 @@ This document is a summary of Assignment 3 for CS 444 Operating Systems II at Or
 
 \medskip
 
-\noindent For our Encrypted Block Device implementation, we used a pre-established sbull.c driver example from {https://github.com/duxing2007/ldd3-examples-3.x/blob/master/sbull/sbull.c} as a basis for the driver. From there we implemented data encryption through...
+\noindent For our Encrypted Block Device implementation, we used a pre-established sbd.c driver example from (\href{http://blog.superpat.com/2010/05/04/a-simple-block-driver-for-linux-kernel-2-6-31/}{driver}) as a basis for the encryption module. From there we implemented data encryption through...
 
 \bigskip
 
@@ -73,7 +73,7 @@ This document is a summary of Assignment 3 for CS 444 Operating Systems II at Or
 
 \medskip
 
-\noindent The point of this assignment was to learn how to use an API from the Linux kernel that has poor documentation and design an implementation based off of examples and outside resources.
+\noindent The point of this assignment was to learn how to use an API from the Linux kernel that has poor documentation and design an encrypted block driver module through examples and outside resources.
 \bigskip
 
 \noindent\textbf{How did you personally approach the problem?}
@@ -81,12 +81,12 @@ This document is a summary of Assignment 3 for CS 444 Operating Systems II at Or
 
 \medskip
 
-\noindent We used an sbull.c implementation of a disc driver we found that has been updated to work with Linux 3.x systems. We {Add encryption} 
+\noindent We used an sbd.c implementation of a block driver we found that was written to work for Linux 3.x kernels. After looking through the cryptoloop.c code and researching block driver encryption, we ***add encryption***
 \medskip
 
 \medskip
 
-\noindent {Desired result}
+\noindent We aimed to create a filesystem on our encrypted driver that took a parameter value to be used as the encryption key and encrypt any writes made to the driver and decrypt any reads. 
 
 \bigskip
 
@@ -95,7 +95,7 @@ This document is a summary of Assignment 3 for CS 444 Operating Systems II at Or
 
 \medskip
 
-\noindent After designing our sbull.c driver, we added it to the .config file and used the insmod command to install the module. We then created a file system on the module with ``mkfs -t ext2 /dev/\textless dev-name\textgreater'' and mounted it with ``mount -t ext2 /dev/\textless dev-name\textgreater /mnt'' for read/write abilities. From here, we manipulated the filesystem and used a series of printk's to ensure that the data being written and read was encrypted based on the crypt key command parameter passed.
+\noindent After designing our sbd.c driver, we added it to the .config file with a "-m" flag to compile the module onto our kernel. Inside the kernel terminal we used the insmod command to install the our sbd module. We then created a file system on the module with ``mkfs -t ext2 /dev/\textless dev-name\textgreater'' and mounted it with ``mount -t ext2 /dev/\textless dev-name\textgreater /mnt'' for read/write abilities. From here, we manipulated the filesystem and used a series of printk's to ensure that the data being written and read was encrypted with the key command parameter passed in.
 
 \bigskip
 
@@ -104,8 +104,8 @@ This document is a summary of Assignment 3 for CS 444 Operating Systems II at Or
 
 \medskip
 
-\noindent everything.
-
+\noindent We learned how to add driver into the /driver/block directory in our kernel and compile it to be used by the kernel. We also leaned how kernel drivers are created and the code behind the I/O operations performed by the driver. 
+***Add stuff about encryption***
 \section{Concurrency Assignment}
 \bigskip
 
@@ -114,7 +114,7 @@ This document is a summary of Assignment 3 for CS 444 Operating Systems II at Or
 
 \medskip
 
-\noindent The main point of this concurrency assignment was to 
+\noindent The main point of this concurrency assignment was to implement a solution for a Categorial Mutual Exclusion problem. This problem called for three different kinds of threads: inserter threads, searcher threads, and deleter threads. Each type of thread needed to have exclusive access to a commonly shared struct link list and manipulate list items.
 
 \bigskip
 
@@ -123,7 +123,7 @@ This document is a summary of Assignment 3 for CS 444 Operating Systems II at Or
 
 \medskip
 
-\noindent info
+\noindent For this concurrency assignment we had 3 types of threads that all had exclusive access to a static linked list. Multiple searches could occur at once, but had a mutex for control over a NUMBER\_OF\_SEARCHERS variable that incremented and decremented as searchers started and finished their operations. Inserted threads invoke the inserter/deleter mutex that ensures inserters exclude deleter threads and other inserter threads. Lastly, deleter threads invoke the searcher/deleter mutex and a PTHREAD\_CONDITION that communicates with searchers to give searchers and deleters exclusive access to the linked list. Once all the threads where locking and performing concurrently, we added sleep(1) at the end of ever thread's critical section so the print statements in the console were very clear when the program was running. We assigned different ANSI\_COLOR schemes for the different thread types, and printed the linked list after each operation.
 
 \bigskip
 
@@ -132,7 +132,7 @@ This document is a summary of Assignment 3 for CS 444 Operating Systems II at Or
 
 \medskip
 
-\noindent info
+\noindent We added various printf statements in our code when a thread was blocked, or when a thread was inserting, deleting, searching...etc. We printed the program flow onto the console and printed the linked list after any operation was performed to show how the list was changing.
 \bigskip
 
 \noindent\textbf{What did you learn?}
@@ -140,7 +140,7 @@ This document is a summary of Assignment 3 for CS 444 Operating Systems II at Or
 
 \medskip
 
-\noindent info
+\noindent **ADD STUFF***
 \medskip
 
 
@@ -170,16 +170,17 @@ This document is a summary of Assignment 3 for CS 444 Operating Systems II at Or
 \bigskip
 
 \begin{itemize}
-\item Brian copied noop-iosched.c to sstf-iosched.c in the /block directory
-\item Brian researched schedulers and elevator algorithms, started kernel assignment
-\item Group completed the concurrency program
-\item Luke wrote a python script for generating I/O to test new scheduling algorithm
-\item Daniel added .tex and Makefile to the project repository
-\item Group continued work and research on the kernel assignment
-\item Luke and Brian implemented final fixes in sstf-iosched.c
-\item Group finished the assignment write-up in a Google Doc
-\item Brian transferred the content from the Google Doc write-up to the \LaTeX\ file
-\item Group pushed final changes to GitHub and prepared tarball for submission on TEACH
+\item Luke brought working Categorial Mutual Exclusion code to recitation.
+\item Daniel and Brian implemented linked list to be manipulated.
+\item Luke added sleepers to the threads to simplify printf output. 
+\item Daniel moved sbull.c file into ~/devices/block/ directory.
+\item Group decided to use sbd driver for the assignment.
+\item Group compiled and tested creating a file system on default driver.
+\item Luke tested some cryptography on an sbd.c driver.
+\item Brian implemented cryptographic operation on the sbd.c file.
+\item Daniel updated LaTex file. 
+\item Luke finalized concurrency assignment.
+
 \end{itemize}
 
 \end{document}
