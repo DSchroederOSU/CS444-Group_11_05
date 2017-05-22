@@ -1,0 +1,180 @@
+\documentclass[10pt,letterpaper,draftclsnofoot,onecolumn]{IEEEtran}
+
+\usepackage{graphicx}                                        
+\usepackage{amssymb}                                         
+\usepackage{amsmath}                                         
+\usepackage{amsthm}                                          
+
+\usepackage{alltt}                                           
+\usepackage{float}
+\usepackage{color}
+\usepackage{url}
+
+\usepackage{balance}
+\usepackage[TABBOTCAP, tight]{subfigure}
+\usepackage{enumitem}
+\usepackage{pstricks, pst-node}
+
+\usepackage{geometry}
+\geometry{textheight=8.5in, textwidth=6in, margin=0.75in}
+\usepackage[singlespacing]{setspace}
+
+\newcommand{\cred}[1]{{\color{red}#1}}
+\newcommand{\cblue}[1]{{\color{blue}#1}}
+
+\usepackage{hyperref}
+\usepackage{geometry}
+
+\def\name{Group 11-05}
+
+%pull in the necessary preamble matter for pygments output
+
+%% The following metadata will show up in the PDF properties
+\hypersetup{
+  colorlinks = true,
+  urlcolor = red,
+  pdfauthor = {\name},
+  pdfkeywords = {cs444},
+  pdftitle = {CS 444 Assignment III: Encrypted Block Device},
+  pdfsubject = {CS 444 Assignment 3},
+  pdfpagemode = UseNone
+}
+
+\begin{document}
+
+\begin{titlepage}
+\centering
+{\Large Group 11-05: Daniel Schroeder, Brian Ozarowicz, and Luke Morrison\par}
+\vspace{1cm}
+{\scshape\Large CS 444 Operating Systems II\par}
+{\scshape\Large Spring 2017\par}
+\vspace{1cm}
+{\huge\bfseries Assignment III: Encrypted Block Device\par}
+\vspace{2cm}
+\begin{abstract}
+This document is a summary of Assignment 3 for CS 444 Operating Systems II at Oregon State University Spring 2017. This document includes the design and implementation of the kernel assignment to implement an Encrypted Block Device, responses to the design and implimenation questions for the kernel and concurrency assignments, and a work log.
+\end{abstract}
+\end{titlepage}
+
+\section{Kernel Assignment}
+\bigskip
+
+\noindent\textbf{Design}
+\medskip
+
+\medskip
+
+\noindent For our Encrypted Block Device implementation, we used a pre-established sbd.c driver example from (\href{http://blog.superpat.com/2010/05/04/a-simple-block-driver-for-linux-kernel-2-6-31/}{driver}) as a basis for the encryption module. From there we implemented data encryption through use of the functions provided by the kernel crypto API.
+
+\bigskip
+
+\noindent\textbf{What do you think the main point of this assignment is?}
+\medskip
+
+\medskip
+
+\noindent The point of this assignment was to learn how to use an API from the Linux kernel that has poor documentation and design an encrypted block driver module through combining information gathered from examples and outside resources we could find.
+\bigskip
+
+\noindent\textbf{How did you personally approach the problem?}
+\medskip
+
+\medskip
+
+\noindent We used an sbd.c implementation of a block driver we found that was updated to work for Linux 3.x kernels. After looking through the cryptoloop.c code and researching block driver encryption, we pieced together how to use the crypto API from various sources and examples online and added encryption around the driver's write function and decryption around the read function.
+
+\bigskip
+
+\noindent\textbf{How did you ensure your solution was correct?}
+\medskip
+
+\medskip
+
+\noindent After designing our sbd.c driver, we added it to the .config file with a "\texttt{-m}" flag to compile the module onto our kernel. Inside the kernel terminal we used the insmod command to load our sbd module. We then created a file system on the module with "\texttt{mkfs -t ext2 /dev/\textless dev-name\textgreater}" and mounted it with "\texttt{mount -t ext2 /dev/\textless dev-name\textgreater /mnt}" for read/write abilities. From here, we manipulated the filesystem by writing and reading test files and used a series of \texttt{printk} statements in the dirver code to ensure that the data being written and read was encrypted and decrypted with the key command parameter that was passed in.
+
+\bigskip
+
+\noindent\textbf{What did you learn?}
+\medskip
+
+\medskip
+
+\noindent We learned how to add a driver into the \texttt{/driver/block} directory in our kernel and compile it and how to load it for use by the kernel. We also leaned how kernel drivers are created and the code behind the I/O operations performed by the driver. We learned how to use an API through studying examples when documentation is lacking, and specifically how to implement the crypto API to use AES encryption on filesystem reads and writes.
+
+\bigskip
+
+\section{Concurrency Assignment}
+\bigskip
+
+\noindent\textbf{What do you think the main point of this assignment is?}
+\medskip
+
+\medskip
+
+\noindent The main point of this concurrency assignment was to implement a solution for a Categorial Mutual Exclusion problem. This problem called for three different kinds of threads: inserter threads, searcher threads, and deleter threads. Each type of thread needed to have exclusive access to a commonly shared linked list and manipulate the list items.
+
+\bigskip
+
+\noindent\textbf{How did you personally approach the problem?}
+\medskip
+
+\medskip
+
+\noindent For this concurrency assignment we had 3 types of threads that all had exclusive access to a static linked list. Multiple searches could occur at once, but had a mutex for control over a \texttt{NUMBER\_OF\_SEARCHERS} variable that incremented and decremented as searchers started and finished their operations. Inserted threads invoke the inserter/deleter mutex that ensures inserters exclude deleter threads and other inserter threads. Lastly, deleter threads invoke the searcher/deleter mutex and a \texttt{PTHREAD\_CONDITION} that communicates with searchers to give searchers and deleters exclusive access to the linked list. Once all the threads were locking and performing concurrently, we added \texttt{sleep(1)} at the end of every thread's critical section so the print statements in the console were clear when the program was running. We assigned different \texttt{ANSI\_COLOR} schemes for the different thread types to make them easier to distinguish and printed the elements in the linked list after each operation for visual confirmation of the changes being made.
+
+\bigskip
+
+\noindent\textbf{How did you ensure your solution was correct?}
+\medskip
+
+\medskip
+
+\noindent We added various \texttt{printf} statements in our code when a thread was blocked, or when a thread was inserting, deleting, searching, etc. We printed the program flow in the console and printed the linked list after any operation was performed to show how the list was changing.
+\bigskip
+
+\noindent\textbf{What did you learn?}
+\medskip
+
+\medskip
+
+\noindent We learned how to exclude multiple threads from interfering in the critical section of our program. There was a set of requirements for exclusion based on the activity of each thread, so designing a program that implemented mutexes and exclusion for very specific conditions was new and interesting. We also found techniques for printing out our linked list and tracking any data manipulations that happened throughout the program.
+\bigskip
+
+\section{Version Control Log}
+\bigskip
+
+\begin{tabular}{l l l}\textbf{Detail} & \textbf{Author} & \textbf{Description}\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group_11_05/commit/efa97c8a531581b74d351c5c3f0f8b1f13540455}{efa97c8} & Luke Morrison & c3\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group_11_05/commit/7d73654979eb7198995a959c292dd2062401b464}{7d73654} & Luke Morrison & edited c3\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group_11_05/commit/c976d8184cf0397b6f7128df89ca1d29ebc5f086}{c976d81} & Luke Morrison & module howto + c3 update\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group_11_05/commit/1a667dbf3174f73e60390bb5b52e5872f4527904}{1a667db} & DSchroederOSU & tex file update\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group_11_05/commit/4aa1af6a9d78818c90452ab3a39b933259228a2a}{4aa1af6} & Luke Morrison & final c3.c\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group_11_05/commit/cbaab575cd530eb94a5e13746725d8393ca07735}{cbaab57} & Luke Morrison & Pushing the final c3.c file\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group_11_05/commit/7dfb158f2585339b66bd87b04ddf70f9a8e191d3}{7dfb158} & ozarowib & added print list after insertion and deletion\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group_11_05/commit/652b24b7d0412bb5b3044c9d4aa1fa3fcc6c8f1d}{652b24b} & Luke Morrison & adding to back of list now\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group_11_05/commit/dfa0770241a97e5de391907bd1da8dfb18efc8ef}{dfa0770} & Luke Morrison & now using singly linked list\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group_11_05/commit/03fde718e9793c36da5b8276f019b9c6ac7fcd5b}{03fde71} & ozarowib & minor code cleanup, for class style\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group_11_05/commit/4ba9e226bc34720e009644e7625ad443ef06c8fb}{4ba9e22} & DSchroederOSU & added thread id's\\\hline\end{tabular}
+\bigskip
+
+\section{Work Log}
+\bigskip
+
+\begin{itemize}
+\item Luke brought working Categorial Mutual Exclusion code to recitation
+\item Daniel and Brian implemented linked list to be manipulated
+\item Luke added sleepers to the threads to simplify printf output
+\item Daniel moved sbull.c file into /drivers/block/ directory
+\item Group decided to use sbd driver for the assignment instead
+\item Group compiled and tested creating a file system using the default sbd driver
+\item Group researched crypto documentation and online examples of use
+\item Luke tested some cryptography on an sbd.c driver
+\item Brian implemented cryptographic operation on the sbd.c file
+\item Daniel updated initial \LaTeX\ file
+\item Luke finalized concurrency assignment
+\item Group made final review of sbd.c
+\item Brian created Linux patch
+\item Group finished project writeup and prepared tarball for submission on TEACH
+\end{itemize}
+
+\end{document}

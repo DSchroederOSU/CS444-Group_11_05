@@ -1,0 +1,185 @@
+\documentclass[10pt,letterpaper,draftclsnofoot,onecolumn]{IEEEtran}
+
+\usepackage{graphicx}                                        
+\usepackage{amssymb}                                         
+\usepackage{amsmath}                                         
+\usepackage{amsthm}                                          
+
+\usepackage{alltt}                                           
+\usepackage{float}
+\usepackage{color}
+\usepackage{url}
+
+\usepackage{balance}
+\usepackage[TABBOTCAP, tight]{subfigure}
+\usepackage{enumitem}
+\usepackage{pstricks, pst-node}
+
+\usepackage{geometry}
+\geometry{textheight=8.5in, textwidth=6in, margin=0.75in}
+\usepackage[singlespacing]{setspace}
+
+\newcommand{\cred}[1]{{\color{red}#1}}
+\newcommand{\cblue}[1]{{\color{blue}#1}}
+
+\usepackage{hyperref}
+\usepackage{geometry}
+
+\def\name{Group 11-05}
+
+%pull in the necessary preamble matter for pygments output
+
+%% The following metadata will show up in the PDF properties
+\hypersetup{
+  colorlinks = true,
+  urlcolor = black,
+  pdfauthor = {\name},
+  pdfkeywords = {cs444},
+  pdftitle = {CS 444 Assignment III: I/O Elevators},
+  pdfsubject = {CS 444 Assignment 3},
+  pdfpagemode = UseNone
+}
+
+\begin{document}
+
+\begin{titlepage}
+\centering
+{\Large Group 11-05: Daniel Schroeder, Brian Ozarowicz, and Luke Morrison\par}
+\vspace{1cm}
+{\scshape\Large CS 444 Operating Systems II\par}
+{\scshape\Large Spring 2017\par}
+\vspace{1cm}
+{\huge\bfseries Assignment III: Encrypted Block Device\par}
+\vspace{2cm}
+\begin{abstract}
+This document is a summary of Assignment 3 for CS 444 Operating Systems II at Oregon State University Spring 2017. This document includes the design and implementation of the kernel assignment to implement an Encrypted Block Device, responses to the design and implimenation questions for the kernel and concurrency assignments, and a work log.
+\end{abstract}
+\end{titlepage}
+
+\section{Kernel Assignment}
+\bigskip
+
+\noindent\textbf{Design}
+\medskip
+
+\medskip
+
+\noindent For our Encrypted Block Device implementation, we used a pre-established sbull.c driver example from {https://github.com/duxing2007/ldd3-examples-3.x/blob/master/sbull/sbull.c} as a basis for the driver. From there we implemented data encryption through...
+
+\bigskip
+
+\noindent\textbf{What do you think the main point of this assignment is?}
+\medskip
+
+\medskip
+
+\noindent The point of this assignment was to learn how to use an API from the Linux kernel that has poor documentation and design an implementation based off of examples and outside resources.
+\bigskip
+
+\noindent\textbf{How did you personally approach the problem?}
+\medskip
+
+\medskip
+
+\noindent We used an sbull.c implementation of a disc driver we found that has been updated to work with Linux 3.x systems. We {Add encryption} 
+\medskip
+
+\medskip
+
+\noindent {Desired result}
+
+\bigskip
+
+\noindent\textbf{How did you ensure your solution was correct?}
+\medskip
+
+\medskip
+
+\noindent After designing our sbull.c driver, we added it to the .config file and used the insmod command to install the module. We then created a file system on the module with ``mkfs -t ext2 /dev/\textless dev-name\textgreater'' and mounted it with ``mount -t ext2 /dev/\textless dev-name\textgreater /mnt'' for read/write abilities. From here, we manipulated the filesystem and used a series of printk's to ensure that the data being written and read was encrypted based on the crypt key command parameter passed.
+
+\bigskip
+
+\noindent\textbf{What did you learn?}
+\medskip
+
+\medskip
+
+\noindent everything.
+
+\section{Concurrency Assignment}
+\bigskip
+
+\noindent\textbf{What do you think the main point of this assignment is?}
+\medskip
+
+\medskip
+
+\noindent The main point of this concurrency assignment was to 
+
+\bigskip
+
+\noindent\textbf{How did you personally approach the problem?}
+\medskip
+
+\medskip
+
+\noindent info
+
+\bigskip
+
+\noindent\textbf{How did you ensure your solution was correct?}
+\medskip
+
+\medskip
+
+\noindent info
+\bigskip
+
+\noindent\textbf{What did you learn?}
+\medskip
+
+\medskip
+
+\noindent info
+\medskip
+
+
+\section{Version Control Log}
+\bigskip
+
+\noindent\begin{tabular}{l l l}\textbf{Detail} & \textbf{Author} & \textbf{Description}\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/31d0e499089bc16ec0f1a8651c6579b882fe3837}{31d0e49} & ozarowib & HW2 preparation\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/d76f94b4ef4e153d4a4082e754008b003cbcb8fc}{d76f94b} & Luke Morrison & luke's philosophers\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/6ecb0b1be6e85c16b4d50d2c492c10fb3598a1d2}{6ecb0b1} & Luke Morrison & luke philosophers\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/8fe1537eedfae5e846f6cb43d280fc8f716fc7d0}{8fe1537} & Luke Morrison & howto for changing scheduler\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/1858a4b72e56d55cf51047d145d37da8924d0a95}{1858a4b} & DSchroederOSU & fixed concurrency\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/fe2fee9cb7be6a8dc4f24a05b72d855ab6f14d2e}{fe2fee9} & DSchroederOSU & added tex and make\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/f1cc0bee6c166599c52da86c7462076456200697}{f1cc0be} & Luke Morrison & cleanup + fix issues\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/3b97f026eb869e0905fb8d1b09213294b9f629d6}{3b97f02} & Luke Morrison & test for IO scheduler\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/a4abfb8d116f312257ec679de7d846a52eec9281}{a4abfb8} & Luke Morrison & added command line arguments\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/b1e7d32a4b99257f3570ea84c4e2a08c60eb89e1}{b1e7d32} & DSchroederOSU & fixed concurrency\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/df9f80af0d69e84ff3f2b052b8af192c2340c0d5}{df9f80a} & DSchroederOSU & tex file and concurrency work\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/93ea155de2ddeeb5360af8ec1df1ad7b1b315a10}{93ea155} & DSchroederOSU & adding tex file\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/2fdcd23f98fb16f5f5cc05d36e1e46708aaf2463}{2fdcd23} & DSchroederOSU & working on code in Latex file\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/8df401398a214f996bbdd6e5ef42407e2f5d33b5}{8df4013} & ozarowib & conformed to class style\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/38ad76e091720598addf73749757dffbc01ea642}{38ad76e} & DSchroederOSU & added code to tex file\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/dc6e9301c617451dcba6073b38c9c5a406482b20}{dc6e930} & DSchroederOSU & Merge branch 'master' of https://github.com/DSchroederOSU/CS444-Group\_11\_05\\\hline\end{tabular}
+\bigskip
+
+\section{Work Log}
+\bigskip
+
+\begin{itemize}
+\item Brian copied noop-iosched.c to sstf-iosched.c in the /block directory
+\item Brian researched schedulers and elevator algorithms, started kernel assignment
+\item Group completed the concurrency program
+\item Luke wrote a python script for generating I/O to test new scheduling algorithm
+\item Daniel added .tex and Makefile to the project repository
+\item Group continued work and research on the kernel assignment
+\item Luke and Brian implemented final fixes in sstf-iosched.c
+\item Group finished the assignment write-up in a Google Doc
+\item Brian transferred the content from the Google Doc write-up to the \LaTeX\ file
+\item Group pushed final changes to GitHub and prepared tarball for submission on TEACH
+\end{itemize}
+
+\end{document}

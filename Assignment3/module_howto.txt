@@ -1,0 +1,20 @@
+When making a module, make sure to make the appropriate changes to the Makefile and Kconfig. The module should be set as "tristate" in Kconfig so that we get (y/n/m) options.
+
+To get the *.ko file, make sure that the device is set to "=m" in the .config
+
+Bring the module in the VM with SCP and using the "insmod" command to use it.
+You can also use modinfo so see the module parameters.
+parameters do not need to be set as they have a default value hardcoded in the module.
+
+After ismoding, you will get a message saying the device has no filesystem.
+The message will also have the device name (something like sbd0 for sbd.ko)
+(You can also figure out the dev name by looking in /sys/dev)
+
+To create a filesystem on the device, use:
+	"mkfs -t ext2 /dev/<dev-name>"
+
+Then, mount it to a directory (we usually use /mnt):
+	"mount -t ext2 /dev/<dev-name> /mnt"
+
+where <dev-name> was the name of the device.
+You can now navigate to /mnt to write and read from the module
