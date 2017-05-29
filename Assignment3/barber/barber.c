@@ -131,10 +131,11 @@ void *cust(void *number) {
 		customers += 1;
 		printf("Customer %d entering waiting room.\n", num);
 		sem_post(&mutex); 
-		sem_post(&customer); 
+		sem_post(&customer);
+		printf("Customer %d going to wake the barber...\n", num); 
 		sem_wait(&barber); 
-		printf("Customer %d is getting a hair cut...\n", num);
 		sem_post(&customerDone); 
+		printf("Customer %d is done with their haircut...\n", num);
 		sem_wait(&barberDone); 
 		sem_wait(&mutex); 
 		customers -= 1;
@@ -143,17 +144,19 @@ void *cust(void *number) {
 }
 void *barb(void *b) {
 		while(!allDone){
+				printf("Barber is sleeping...\n");
 				sem_wait(&customer);
 				sem_post(&barber); 
 				if(!allDone){
 					int time = barber_cut_time(3, 7);
 					printf("Barber is cutting hair for %d seconds...\n", time);
 					sleep(time);
-					sem_wait(&customerDone); 
+					sem_wait(&customerDone);
+					printf("Barber done with haircut. Going to sleep...\n"); 
 					sem_post(&barberDone);
         		}
         		else
-        			printf("All customers have been serviced...\n", time);		
+        			printf("All customers have been serviced...\n", time);	
 		}
 		
 }
