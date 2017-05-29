@@ -125,17 +125,21 @@ void *cust(void *number) {
 	
 		if(customers == n){
 			printf("No seats available, leaving store.\n");
+			fflush(stdout); 
 			sem_post(&mutex); 
 		}
 		else{
 		customers += 1;
 		printf("Customer %d entering waiting room.\n", num);
+		fflush(stdout); 
 		sem_post(&mutex); 
 		sem_post(&customer);
-		printf("Customer %d going to wake the barber...\n", num); 
+		printf("Customer %d going to wake the barber...\n", num);
+		fflush(stdout); 
 		sem_wait(&barber); 
 		sem_post(&customerDone); 
 		printf("Customer %d is done with their haircut...\n", num);
+		fflush(stdout); 
 		sem_wait(&barberDone); 
 		sem_wait(&mutex); 
 		customers -= 1;
@@ -145,18 +149,22 @@ void *cust(void *number) {
 void *barb(void *b) {
 		while(!allDone){
 				printf("Barber is sleeping...\n");
+				fflush(stdout); 
 				sem_wait(&customer);
 				sem_post(&barber); 
 				if(!allDone){
 					int time = barber_cut_time(3, 7);
 					printf("Barber is cutting hair for %d seconds...\n", time);
+					fflush(stdout); 
 					sleep(time);
 					sem_wait(&customerDone);
-					printf("Barber done with haircut. Going to sleep...\n"); 
+					printf("Barber done with haircut. Going to sleep...\n");
+					fflush(stdout);  
 					sem_post(&barberDone);
         		}
         		else
         			printf("All customers have been serviced...\n", time);	
+        			fflush(stdout); 
 		}
 		
 }
