@@ -139,10 +139,11 @@ void *cust(void *number) {
 		printf("Customer %d going to wake the barber...\n", num);
 		fflush(stdout);
 		sem_post(&customerDone); 
-		printf("Customer %d is done with their haircut...\n", num);
-		fflush(stdout); 
+		
 		sem_wait(&barberDone); 
 		sem_wait(&mutex); 
+		printf("Customer %d is done with their haircut...\n", num);
+		fflush(stdout); 
 		customers -= 1;
 		sem_post(&mutex); 
 		}
