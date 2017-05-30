@@ -47,10 +47,16 @@ int main(){
 	sem_init(&mutex, 0, 3);  //assign value of three
 	
 	pthread_t consumer_thread[NUM_CONSUMER];
+	int consumers[NUM_CONSUMER];
+	int i;
+	for (i=0; i<NUM_CONSUMER; i++) {
+	consumers[i] = i;
+	}
+	
 	
 	int i;
 	for (i=0 ; i<NUM_CONSUMER; i++) {
-		pthread_create(&consumer_thread[i], NULL, consumer, (void *)&i);
+		pthread_create(&consumer_thread[i], NULL, consumer, (void *)&consumers[i]);
 	}
 	for (i=0 ; i<NUM_CONSUMER; i++) {
 		pthread_join(consumer_thread[i],NULL);
