@@ -130,9 +130,11 @@ void* consumer (void *number)
 	active -= 1;
 	if( active == 0 ){
 	
-		int n 
-		if( waiting < 3) n = waiting;
-		else n = 3;
+		int n;
+		if( waiting < 3) 
+			n = waiting;
+		else 
+			n = 3;
 		
 		while(n > 0 ){
 			sem_post(&block);
