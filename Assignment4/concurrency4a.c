@@ -62,6 +62,13 @@ struct shared{
 sem_t mutex;
 
 void* consumer (void *number);
+int get_random_sleep(int min, int max);
+int mt19937(int min, int max);
+void init_genrand(unsigned long s);
+void init_by_array(unsigned long init_key[], int key_length);
+unsigned long genrand_int32(void);
+int rdrand(int min, int max);
+
 
 int main(){
 
