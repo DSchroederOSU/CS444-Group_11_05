@@ -123,14 +123,17 @@ void* consumer (void *number)
 	
 	
 	printf(ANSI_COLOR_RED "Customer %d has the resource.\n" ANSI_COLOR_RESET, num);
+	fflush(stdout);
 	int sleeptime = get_random_sleep(3, 6);
 	sleep(sleeptime);
 	
 	sem_wait(&mutex);
 	active -= 1;
 	printf(ANSI_COLOR_GREEN "Customer %d is leaving the resource.\n" ANSI_COLOR_RESET, num);
+	fflush(stdout);
 	if( active == 0 ){
 		printf(ANSI_COLOR_BLUE "RESOURCE IS EMPTY.\n" ANSI_COLOR_RESET);
+		fflush(stdout);
 		int n;
 		if( waiting < 3) 
 			n = waiting;
