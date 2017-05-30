@@ -69,21 +69,34 @@ int customers = 0; //number of customers in the shop
 int allDone = 0;
 //customers counts the number of customers 
 //in the shop; it is protected by mutex.
-sem_t mutex; 
 
-sem_t customer;
-sem_t barber;
 
-sem_t customerDone; //done getting haircut
-sem_t barberDone; //done cutting hair
+//mutex for fullwaitroom
+sem_t mutex;
+// waitingRoom Limits the # of customers allowed 
+// to enter the waiting room at one time.
+sem_t waitingRoom;   
+
+// barberChair ensures mutually exclusive access to
+// the barber chair.
+sem_t barberChair;
+
+// barberPillow is used to allow the barber to sleep
+// until a customer arrives.
+sem_t barberPillow;
+
+// seatBelt is used to make the customer to wait until
+// the barber is done cutting his/her hair. 
+sem_t seatBelt;
+
 
 int main(int argc, char *argv[]) {
 		//initialize semaphores
-		sem_init(&mutex, 0, 1);  
-		sem_init(&customer, 0, 0); 
-		sem_init(&barber, 0, 0); 
-		sem_init(&customerDone, 0, 0); 
-		sem_init(&barberDone, 0, 0); 
+		sem_init(&waitingRoom, 0, n);  
+		sem_init(&barberChair, 0, 1); 
+		sem_init(&barberSleep, 0, 0); 
+		sem_init(&customerWait, 0, 0); 
+		sem_init(&mutex, 0, 1); 
 		
 		
 		pthread_t barber_thread;
@@ -113,7 +126,7 @@ int main(int argc, char *argv[]) {
 		// barber thread.
 
 		allDone = 1;
-		sem_post(&customer); //wake barber to allow exit
+		//sem_post(&customer); //wake barber to allow exit
 		pthread_join(barber_thread, NULL);
 		
 		return 0;
@@ -133,12 +146,22 @@ void *cust(void *number) {
 		printf("Customer %d entering waiting room.\n", num);
 		fflush(stdout); 
 		sem_post(&mutex); 
-		printf("Customer %d going to wake the barber...\n", num);
-		fflush(stdout);
-		sem_post(&customer);
-		sem_wait(&barber); 
-		sem_post(&customerDone); 
-		sem_wait(&barberDone); 
+		
+		// Wait for the barber chair to become free.
+		sem_wait(&barberChair); 
+		// The chair is free so give up your spot in the
+    	// waiting room.
+		sem_post(&waitingRoom);
+		
+		// Wake up the barber...
+  	    printf("Customer %d waking the barber.\n", num);
+  		sem_post(&barberPillow);
+  		
+		// Wait for the barber to finish cutting your hair.
+    	sem_wait(&seatBelt); 
+		// Give up the chair.
+   		sem_post(&barberChair);
+   		printf("Customer %d leaving barber shop.\n", num);
 		sem_wait(&mutex); 
 		customers -= 1;
 		sem_post(&mutex); 
@@ -148,17 +171,17 @@ void *barb(void *b) {
 		while(!allDone){
 				printf("Barber is sleeping...\n");
 				fflush(stdout); 
-				sem_wait(&customer);
-				sem_post(&barber); 
+				sem_wait(&barberPillow);
+
 				if(!allDone){
 					int time = barber_cut_time(3, 7);
 					printf("Barber is cutting hair for %d seconds...\n", time);
 					fflush(stdout); 
 					sleep(time);
-					sem_wait(&customerDone);
+					
 					printf("Barber done with haircut. Going to sleep...\n");
 					fflush(stdout);  
-					sem_post(&barberDone);
+					sem_post(&seatBelt);
         		}
         		else
         			printf("All customers have been serviced...\n", time);	
