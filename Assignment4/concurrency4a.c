@@ -124,7 +124,7 @@ void* consumer (void *number)
 	active -= 1;
 	if( active == 0 ){
 	
-		int n =   MIN(waiting, 3);
+		int n = min (waiting, 3);
 		waiting -= n;
 		active = n;
 		while(n > 0 ){
