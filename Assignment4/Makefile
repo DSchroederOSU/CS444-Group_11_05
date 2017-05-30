@@ -36,8 +36,8 @@ showps: $(PSF)
 
 all: pdf concurrency4
 
-concurrency4:
-	gcc concurrency4.c -o concurrency4 -lpthread -lm
+prog:
+	gcc concurrency4.c -Wall -o concurrency4 -lpthread -lm
 
 clean:
 	rm -f *.pdf *.ps *.dvi *.out *.log *.aux *.bbl *.blg *.pyg *.o concurrency4

@@ -98,108 +98,159 @@ sem_t barberSleep;
 sem_t customerWait;
 
 
-int main(int argc, char *argv[]) {
-		//initialize semaphores
-		sem_init(&waitingRoom, 0, n);  
-		sem_init(&barberChair, 0, 1); 
-		sem_init(&barberSleep, 0, 0); 
-		sem_init(&customerWait, 0, 0); 
-		sem_init(&mutex, 0, 1); 
-		
-		
-		pthread_t barber_thread;
-		pthread_t customer_thread[n];
-		
-		// Create the barber.
-    	pthread_create(&barber_thread, NULL, barb, NULL);
+void usage()
+{
+	printf("Usage: ./concurrency4 [num_chairs num_customers]\n");
+}
 
-		// Create the customers.
-		// This is to print the thread number (i.e. Customer# is...)
-		int customers[10];
+int main(int argc, char *argv[]) {
+
+	int num_cust = 10;
+
+	if (argc != 1 && argc != 3) {
+		usage();
+		exit(1);
+	}
+	if (argc == 3) {
+		n = atoi(argv[1]);
+		if (n <= 0) {
+			usage();
+			exit(1);
+		}
+		num_cust = atoi(argv[2]);
+		if (num_cust < 2) {
+			usage();
+			exit(1);
+		}
+	}
+
+	printf(ANSI_COLOR_YELLOW "Number of chairs: %d, Number of customers: %d\n" ANSI_COLOR_RESET, n, num_cust);
+
+	//initialize semaphores
+	sem_init(&waitingRoom, 0, n);  
+	sem_init(&barberChair, 0, 1); 
+	sem_init(&barberSleep, 0, 0); 
+	sem_init(&customerWait, 0, 0); 
+	sem_init(&mutex, 0, 1); 
+	
+	
+	pthread_t barber_thread;
+	pthread_t customer_thread[num_cust];
+	
+	// Create the barber.
+    	pthread_create(&barber_thread, NULL, barb, NULL);
+	sleep(1);
+
+	// Create the customers.
+	// This is to print the thread number (i.e. Customer# is...)
+	int customers[num_cust];
     	int i;
-    	for (i=0; i<10; i++) {
-			customers[i] = i;
+    	for (i=0; i<num_cust; i++) {
+		customers[i] = i;
     	}
 		
-		for (i=0; i<10; i++) {
+	for (i=0 ; i<num_cust; i++) {
 		pthread_create(&customer_thread[i], NULL, cust, (void *)&customers[i]);
-		}
-
-		// Join each of the threads to wait for them to finish.
-		for (i=0; i<10; i++) {
+	}
+	// Join each of the threads to wait for them to finish.
+	for (i=0 ; i<num_cust; i++) {
 		pthread_join(customer_thread[i],NULL);
-		}
+	}
 
-		// When all of the customers are finished, kill the
-		// barber thread.
+	sleep(10);
+	printf("--- Second round of customers ---\n");
+	fflush(stdout);
+	sleep(2);
 
-		allDone = 1;
-		sem_post(&barberSleep); //wake barber to allow exit
-		pthread_join(barber_thread, NULL);
-		
-		return 0;
+	for (i=0 ; i<num_cust; i++) {
+		pthread_create(&customer_thread[i], NULL, cust, (void *)&customers[i]);
+	}
+	// Join each of the threads to wait for them to finish.
+	for (i=0 ; i<num_cust; i++) {
+		pthread_join(customer_thread[i],NULL);
+	}
+
+	// When all of the customers are finished, kill the
+	// barber thread.
+
+	allDone = 1;
+	sem_post(&barberSleep); //wake barber to allow exit
+	pthread_join(barber_thread, NULL);
+	
+	return 0;
 }
 
 void *cust(void *number) {
-		int num = *(int *)number;
-		sem_wait(&mutex); 
-	
-		if(customers == n){
-			printf(ANSI_COLOR_RED "No seats available, leaving store.\n" ANSI_COLOR_RESET);
-			fflush(stdout); 
-			sem_post(&mutex); 
-		}
-		else{
+	int num = *(int *)number;
+	sem_wait(&mutex); 
+
+	if(customers >= n){
+		printf(ANSI_COLOR_RED "Customer %d can't find a seat.\n" ANSI_COLOR_RESET, num);
+		fflush(stdout); 
+	}
+	else{
 		customers += 1;
 		printf(ANSI_COLOR_RED "Customer %d entering waiting room.\n" ANSI_COLOR_RESET, num);
 		fflush(stdout); 
+
+		if (customers == 1){
+			// Wake up the barber...
+			printf(ANSI_COLOR_RED "Customer %d waking the barber.\n" ANSI_COLOR_RESET, num);
+			sem_post(&barberSleep);
+		}
 		sem_post(&mutex); 
 		
 		// Wait for the barber chair to become free.
 		sem_wait(&barberChair); 
 		// The chair is free so give up your spot in the
-    	// waiting room.
+		// waiting room.
 		sem_post(&waitingRoom);
 		
-		// Wake up the barber...
-		printf(ANSI_COLOR_RED "Customer %d waking the barber.\n" ANSI_COLOR_RESET, num);
-  		sem_post(&barberSleep);
-  		
 		// Wait for the barber to finish cutting your hair.
-    	sem_wait(&customerWait); 
+		sem_wait(&customerWait); 
 		// Give up the chair.
-   		sem_post(&barberChair);
-   		printf(ANSI_COLOR_RED "Customer %d leaving barber shop.\n" ANSI_COLOR_RESET, num);
 		sem_wait(&mutex); 
+		sem_post(&barberChair);
 		customers -= 1;
-		sem_post(&mutex); 
-		}
-}
-void *barb(void *b) {
-		while(!allDone){
-				printf(ANSI_COLOR_GREEN "Barber is sleeping...\n" ANSI_COLOR_RESET);
-				fflush(stdout); 
-				sem_wait(&barberSleep);
+	}
 
-				if(!allDone){
-					int time = barber_cut_time(3, 7);
-					printf(ANSI_COLOR_GREEN "Barber is cutting hair for %d seconds...\n" ANSI_COLOR_RESET, time);
-					fflush(stdout); 
-					sleep(time);
-					printf(ANSI_COLOR_GREEN "Barber done with haircut. Going to sleep...\n" ANSI_COLOR_RESET);
-					fflush(stdout);  
-					sem_post(&customerWait);
-        		}
-        		else
-					printf(ANSI_COLOR_GREEN "All customers have been serviced...\n" ANSI_COLOR_RESET, time);
-        			fflush(stdout); 
+	printf(ANSI_COLOR_RED "Customer %d leaving barber shop.\n" ANSI_COLOR_RESET, num);
+	sem_post(&mutex); 
+
+	return NULL;
+}
+
+void *barb(void *b) {
+	while(!allDone){
+		if (customers == 0) {
+			printf(ANSI_COLOR_GREEN "Barber is going to sleep...\n" ANSI_COLOR_RESET);
+			fflush(stdout); 
+			sem_wait(&barberSleep);
+			printf(ANSI_COLOR_GREEN "Barber is woken up...\n" ANSI_COLOR_RESET);
 		}
-		
+		else {
+			int time = barber_cut_time(3, 7);
+			printf(ANSI_COLOR_GREEN "Barber is cutting hair for %d seconds...\n" ANSI_COLOR_RESET, time);
+			fflush(stdout); 
+			/******** cut_hair() ********/
+			sleep(time);
+			/****************************/
+			printf(ANSI_COLOR_GREEN "Barber done with haircut...\n" ANSI_COLOR_RESET);
+			fflush(stdout);  
+			sem_post(&customerWait);
+			sleep(1);	//IMPORTANT! do not remove
+       		}
+	}
+
+	printf(ANSI_COLOR_GREEN "All customers have been serviced!\n" ANSI_COLOR_RESET);
+	fflush(stdout);
+
+	return NULL; 
 }
 
 int barber_cut_time(int min, int max)
 {
-		int time;
+	int time;
         unsigned int eax;
         unsigned int ebx;
         unsigned int ecx;
@@ -207,7 +258,7 @@ int barber_cut_time(int min, int max)
         eax = 0x01;
         __asm__ __volatile__("cpuid;" : "=a"(eax), "=b"(ebx), "=c"(ecx), "=d"(edx) : "a"(eax));
         if (ecx & 0x40000000)
-        		time = rdrand(min, max);
+       		time = rdrand(min, max);
         else
                 time = mt19937(min, max);
                 
@@ -217,7 +268,6 @@ int barber_cut_time(int min, int max)
 int rdrand(int min, int max)
 {
 		unsigned long long arand;
-		int success = 1;
 		int attempt_limit_exceeded = -1;
 		int attempt_limit = 10;
 		int i;
