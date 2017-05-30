@@ -73,7 +73,9 @@ void* consumer (void *number)
 	fflush(stdout);
 	
 	sem_wait(&mutex);
-	printf("Value of mutex is: %d\n", &mutex);
+	int val;
+	sem_getvalue(&mutex, val)
+	printf("Value of mutex is: %d\n", val);
 	
 	
 	
