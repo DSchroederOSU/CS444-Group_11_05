@@ -116,7 +116,7 @@ void* consumer (void *number)
 	 	sem_wait(&block);	
 	}
 	
-	printf(ANSI_COLOR_RED "Customer %d has the resource, number of thread is %d.\n" ANSI_COLOR_RESET, num, (3 - val));
+	printf(ANSI_COLOR_RED "Customer %d has the resource.\n" ANSI_COLOR_RESET, num);
 	int sleeptime = get_random_sleep(3, 6);
 	sleep(sleeptime);
 	
@@ -124,7 +124,7 @@ void* consumer (void *number)
 	active -= 1;
 	if( active == 0 ){
 	
-		int n ( min (waiting, 3));
+		int n =  min (waiting, 3);
 		waiting -= n;
 		active = n;
 		while(n > 0 ){
