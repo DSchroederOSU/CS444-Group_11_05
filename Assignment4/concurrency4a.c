@@ -25,7 +25,7 @@ Implement a mutual exclusion solution that meets the above constraints.
 #include <immintrin.h>
 #include <semaphore.h>
 
-#define NUM_CONSUMER 8
+#define NUM_CONSUMER 14
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_GREEN   "\x1b[32m"
 #define ANSI_COLOR_YELLOW  "\x1b[33m"
@@ -128,6 +128,7 @@ void* consumer (void *number)
 	
 	sem_wait(&mutex);
 	active -= 1;
+	printf(ANSI_COLOR_RED "Customer %d is leaving the resource.\n" ANSI_COLOR_RESET, num);
 	if( active == 0 ){
 	
 		int n;
