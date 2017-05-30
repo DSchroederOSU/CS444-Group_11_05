@@ -101,11 +101,11 @@ void* consumer (void *number)
 	fflush(stdout);
 	
 	sem_wait(&mutex);
-	
+	int val;
 	while(full_flag != 0){
 		sem_wait(&is_full);
 		//check is full then release
-		int val;
+		
 		sem_getvalue(&mutex, &val);
 		if(val == 0){
 			full_flag = 0;
