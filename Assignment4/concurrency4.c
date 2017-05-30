@@ -177,22 +177,21 @@ void *cust(void *number) {
 }
 void *barb(void *b) {
 		while(!allDone){
-				printf("Barber is sleeping...\n");
+				printf(ANSI_COLOR_GREEN "Barber is sleeping...\n" ANSI_COLOR_RESET);
 				fflush(stdout); 
 				sem_wait(&barberSleep);
 
 				if(!allDone){
 					int time = barber_cut_time(3, 7);
-					printf("Barber is cutting hair for %d seconds...\n", time);
+					printf(ANSI_COLOR_GREEN "Barber is cutting hair for %d seconds...\n" ANSI_COLOR_RESET, time);
 					fflush(stdout); 
 					sleep(time);
-					
-					printf("Barber done with haircut. Going to sleep...\n");
+					printf(ANSI_COLOR_GREEN "Barber done with haircut. Going to sleep...\n" ANSI_COLOR_RESET);
 					fflush(stdout);  
 					sem_post(&customerWait);
         		}
         		else
-        			printf("All customers have been serviced...\n", time);	
+					printf(ANSI_COLOR_GREEN "All customers have been serviced...\n" ANSI_COLOR_RESET, time);
         			fflush(stdout); 
 		}
 		
