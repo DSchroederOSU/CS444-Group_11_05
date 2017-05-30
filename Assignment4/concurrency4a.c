@@ -119,7 +119,7 @@ void* consumer (void *number)
 	
 	sem_wait(&is_full);
 		//check is full then release
-	int val;
+	
 	sem_getvalue(&mutex, &val);
 		if(val == 2){
 			full_flag = 1;
