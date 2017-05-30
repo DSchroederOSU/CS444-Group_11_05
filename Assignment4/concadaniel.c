@@ -54,7 +54,7 @@ int main(){
 	}
 	
 	
-	int i;
+	
 	for (i=0 ; i<NUM_CONSUMER; i++) {
 		pthread_create(&consumer_thread[i], NULL, consumer, (void *)&consumers[i]);
 	}
