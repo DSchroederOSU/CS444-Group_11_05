@@ -1,3 +1,11 @@
+/*
+ * Concurrency Assignment 4
+ * Operating Systems II
+ * Luke Morrison, Daniel Schroeder, Brian Ozarowicz
+ * Group 11-05
+ * Spring 2017
+ */
+
 #define _REENTRANT
 #include <stdio.h>
 #include <unistd.h>
