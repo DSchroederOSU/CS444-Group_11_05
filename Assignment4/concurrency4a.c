@@ -43,6 +43,11 @@ Implement a mutual exclusion solution that meets the above constraints.
 #define UPPER_MASK 0x80000000UL
 #define LOWER_MASK 0x7fffffffUL
 
+#ifndef min
+#define min(a,b)            (((a) < (b)) ? (a) : (b))
+#endif
+
+
 /* This calls assembler instruction rdrand and places the random number value into *arand */
 int rdrand64_step (unsigned long long *arand)
 {
@@ -124,7 +129,7 @@ void* consumer (void *number)
 	active -= 1;
 	if( active == 0 ){
 	
-		int n ( min (waiting, 3) );
+		int n = min (waiting, 3);
 		waiting -= n;
 		active = n;
 		while(n > 0 ){
