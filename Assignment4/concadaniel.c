@@ -67,7 +67,7 @@ int main(){
 
 void* consumer (void *number)
 {
-	//check if resource has < 3 threads
+	
 	int num = *(int *)number;
 	printf(ANSI_COLOR_RED "Customer %d is alive.\n" ANSI_COLOR_RESET, num);
 	fflush(stdout);
