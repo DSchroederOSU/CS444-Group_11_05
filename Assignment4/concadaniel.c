@@ -30,7 +30,8 @@ Implement a mutual exclusion solution that meets the above constraints.
 
 struct shared{
 	int value;
-}
+};
+
 sem_t mutex;
 
 int main(){
