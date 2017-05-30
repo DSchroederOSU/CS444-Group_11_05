@@ -1,7 +1,7 @@
 /*
- * Concurrency Assignment 4
+ * Concurrency Assignment 4b
  * Operating Systems II
- * Luke Morrison, Daniel Schroeder, Brian Ozarowicz
+ * Daniel Schroeder, Luke Morrison, Brian Ozarowicz
  * Group 11-05
  * Spring 2017
  */
@@ -22,7 +22,6 @@
 #define ANSI_COLOR_CYAN    "\x1b[36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
-// The maximum number of customer threads.
 #define MAX_CUSTOMERS 25
 #define N 624
 #define M 397
@@ -117,7 +116,6 @@ int main(int argc, char *argv[]) {
 	sem_init(&customerWait, 0, 0); 
 	sem_init(&mutex, 0, 1); 
 	
-	
 	pthread_t barber_thread;
 	pthread_t customer_thread[num_cust];
 	
@@ -201,7 +199,6 @@ void *cust(void *number) {
 
 	printf(ANSI_COLOR_RED "Customer %d leaving barber shop.\n" ANSI_COLOR_RESET, num);
 	sem_post(&mutex); 
-
 	return NULL;
 }
 
@@ -227,7 +224,6 @@ void *barb(void *b) {
 
 	printf(ANSI_COLOR_GREEN "All customers have been serviced!\n" ANSI_COLOR_RESET);
 	fflush(stdout);
-
 	return NULL; 
 }
 

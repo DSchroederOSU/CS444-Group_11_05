@@ -1,22 +1,10 @@
 /*
- 
- * Concurrency Assignment 4
+ * Concurrency Assignment 4a
  * Operating Systems II
- * Luke Morrison, Daniel Schroeder, Brian Ozarowicz
+ * Daniel Schroeder, Brian Ozarowicz, Luke Morrison
  * Group 11-05
  * Spring 2017
-
-Consider a sharable resource with the following characteristics:
-
--	As long as there are fewer than three processes using the resource, 
-	new processes can start using it right away.
-
--	Once there are three processes using the resource, 
-	all three must leave before any new processes can begin using it.
-
-Implement a mutual exclusion solution that meets the above constraints.
-
-*/
+ */
 
 #include <stdio.h>
 #include <unistd.h>
@@ -25,7 +13,7 @@ Implement a mutual exclusion solution that meets the above constraints.
 #include <immintrin.h>
 #include <semaphore.h>
 
-#define NUM_CONSUMER 14
+#define NUM_CONSUMER 15
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_GREEN   "\x1b[32m"
 #define ANSI_COLOR_YELLOW  "\x1b[33m"
@@ -34,9 +22,7 @@ Implement a mutual exclusion solution that meets the above constraints.
 #define ANSI_COLOR_CYAN    "\x1b[36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
-
-// The maximum number of customer threads.
-#define MAX_CUSTOMERS 25
+#define MAX_CUSTOMERS 33
 #define N 624
 #define M 397
 #define MATRIX_A 0x9908b0dfUL
@@ -59,7 +45,6 @@ int rdrand64_step (unsigned long long *arand)
 static unsigned long mt[N];
 static int mti = N + 1;
 
-
 struct shared{
 	int value;
 } my_shared;
@@ -68,7 +53,6 @@ sem_t mutex;
 sem_t block;
 
 int waiting, active;
-
 int is_full;
 
 void* consumer (void *number);
@@ -79,8 +63,7 @@ void init_by_array(unsigned long init_key[], int key_length);
 unsigned long genrand_int32(void);
 int rdrand(int min, int max); 
 
-int main(){
-
+int main() {
 	sem_init(&mutex, 0, 3);  //assign value of three
 	sem_init(&block, 0, 0);  //assign value of three
 	is_full = 0;
@@ -98,17 +81,17 @@ int main(){
 	for (i=0 ; i<NUM_CONSUMER; i++) {
 		pthread_join(consumer_thread[i],NULL);
 	}
+	return 0;
 }
 
 
 
 void* consumer (void *number)
 {
-	
 	int num = *(int *)number;
 	printf(ANSI_COLOR_RED "Customer %d is alive.\n" ANSI_COLOR_RESET, num);
 	fflush(stdout);
-	
+
 	sem_wait(&mutex);
 	if(is_full == 1){
 		waiting +=1;
@@ -120,13 +103,12 @@ void* consumer (void *number)
 	active +=1;
 	is_full = active == 3;
 	sem_post(&mutex);
-	
-	
+
 	printf(ANSI_COLOR_RED "Customer %d has the resource.\n" ANSI_COLOR_RESET, num);
 	fflush(stdout);
 	int sleeptime = get_random_sleep(3, 6);
 	sleep(sleeptime);
-	
+
 	sem_wait(&mutex);
 	active -= 1;
 	printf(ANSI_COLOR_GREEN "Customer %d is leaving the resource.\n" ANSI_COLOR_RESET, num);
@@ -194,6 +176,7 @@ int mt19937(int min, int max)
 				return (genrand_int32() % (unsigned long long)(max - min + 1)) + min;
 
 }
+
 void init_genrand(unsigned long s)
 {
         mt[0]= s & 0xffffffffUL;

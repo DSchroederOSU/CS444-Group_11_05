@@ -42,9 +42,6 @@ concurrency4a:
 concurrency4b:
 	gcc concurrency4b.c -Wall -o concurrency4b -lpthread -lm
 
-concdaniel:
-	gcc concadaniel.c -Wall -o conca -lpthread -lm
-
 clean:
 	rm -f *.pdf *.ps *.dvi *.out *.log *.aux *.bbl *.blg *.pyg *.o concurrency4a concurrency4b
 
