@@ -87,7 +87,7 @@ sem_t barberSleep;
 
 // seatBelt is used to make the customer to wait until
 // the barber is done cutting his/her hair. 
-sem_t seatBelt;
+sem_t customerWait;
 
 
 int main(int argc, char *argv[]) {
@@ -158,7 +158,7 @@ void *cust(void *number) {
   		sem_post(&barberSleep);
   		
 		// Wait for the barber to finish cutting your hair.
-    	sem_wait(&seatBelt); 
+    	sem_wait(&customerWait); 
 		// Give up the chair.
    		sem_post(&barberChair);
    		printf("Customer %d leaving barber shop.\n", num);
@@ -181,7 +181,7 @@ void *barb(void *b) {
 					
 					printf("Barber done with haircut. Going to sleep...\n");
 					fflush(stdout);  
-					sem_post(&seatBelt);
+					sem_post(&customerWait);
         		}
         		else
         			printf("All customers have been serviced...\n", time);	
