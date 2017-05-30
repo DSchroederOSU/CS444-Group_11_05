@@ -110,16 +110,17 @@ void* consumer (void *number)
 	fflush(stdout);
 	
 	sem_wait(&mutex);
-	if(is_full){
+	if(is_full == 1){
 		waiting +=1;
-		sem_wait(&block);
 		sem_post(&mutex);
+		sem_wait(&block);
+		sem_wait(&mutex);
+		waiting -=1;
 	}
-	else{
-		active +=1;
-	 	is_full = active == 3;
-	 	sem_wait(&block);	
-	}
+	active +=1;
+	is_full = active == 3;
+	sem_post(&mutex);
+	
 	
 	printf(ANSI_COLOR_RED "Customer %d has the resource.\n" ANSI_COLOR_RESET, num);
 	int sleeptime = get_random_sleep(3, 6);
@@ -129,16 +130,17 @@ void* consumer (void *number)
 	active -= 1;
 	if( active == 0 ){
 	
-		int n = min (waiting, 3);
-		waiting -= n;
-		active = n;
+		int n 
+		if( waiting < 3) n = waiting;
+		else n = 3;
+		
 		while(n > 0 ){
 			sem_post(&block);
 			n -= 1;
 		}
-		is_full = active == 3; 
+		is_full = 0; 
 	}
-	sem_wait(&block);
+	sem_post(&mutex);
 }
 
 
