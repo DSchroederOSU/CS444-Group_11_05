@@ -128,9 +128,9 @@ void* consumer (void *number)
 	
 	sem_wait(&mutex);
 	active -= 1;
-	printf(ANSI_COLOR_RED "Customer %d is leaving the resource.\n" ANSI_COLOR_RESET, num);
+	printf(ANSI_COLOR_GREEN "Customer %d is leaving the resource.\n" ANSI_COLOR_RESET, num);
 	if( active == 0 ){
-	
+		printf(ANSI_COLOR_BLUE "RESOURCE IS EMPTY.\n" ANSI_COLOR_RESET);
 		int n;
 		if( waiting < 3) 
 			n = waiting;
