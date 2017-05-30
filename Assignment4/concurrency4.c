@@ -83,7 +83,7 @@ sem_t barberChair;
 
 // barberPillow is used to allow the barber to sleep
 // until a customer arrives.
-sem_t barberPillow;
+sem_t barberSleep;
 
 // seatBelt is used to make the customer to wait until
 // the barber is done cutting his/her hair. 
@@ -155,7 +155,7 @@ void *cust(void *number) {
 		
 		// Wake up the barber...
   	    printf("Customer %d waking the barber.\n", num);
-  		sem_post(&barberPillow);
+  		sem_post(&barberSleep);
   		
 		// Wait for the barber to finish cutting your hair.
     	sem_wait(&seatBelt); 
@@ -171,7 +171,7 @@ void *barb(void *b) {
 		while(!allDone){
 				printf("Barber is sleeping...\n");
 				fflush(stdout); 
-				sem_wait(&barberPillow);
+				sem_wait(&barberSleep);
 
 				if(!allDone){
 					int time = barber_cut_time(3, 7);
