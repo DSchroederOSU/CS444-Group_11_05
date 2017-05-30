@@ -124,14 +124,14 @@ void* consumer (void *number)
 	active -= 1;
 	if( active == 0 ){
 	
-		int n =  min (waiting, 3);
+		int n =   MIN(waiting, 3);
 		waiting -= n;
 		active = n;
 		while(n > 0 ){
 			sem_post(&block);
 			n -= 1;
 		}
-		must_wait = active == 3; 
+		is_full = active == 3; 
 	}
 	sem_wait(&block);
 }
