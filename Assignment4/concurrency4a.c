@@ -53,8 +53,6 @@ int main(){
 	consumers[i] = i;
 	}
 	
-	
-	
 	for (i=0 ; i<NUM_CONSUMER; i++) {
 		pthread_create(&consumer_thread[i], NULL, consumer, (void *)&consumers[i]);
 	}
@@ -75,7 +73,8 @@ void* consumer (void *number)
 	sem_wait(&mutex);
 	int val;
 	sem_getvalue(&mutex, &val);
-	printf("Value of mutex is: %d\n", val);
+	
+	printf(ANSI_COLOR_RED "Customer %d has the resource, number of thread is %d.\n" ANSI_COLOR_RESET, num, (3 - val));
 	
 	
 	
