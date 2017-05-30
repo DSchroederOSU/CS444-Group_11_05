@@ -25,14 +25,22 @@ Implement a mutual exclusion solution that meets the above constraints.
 #include <immintrin.h>
 #include <semaphore.h>
 
-#define NUM_CONSUMER 10;
-
+#define NUM_CONSUMER 10
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_YELLOW  "\x1b[33m"
+#define ANSI_COLOR_BLUE    "\x1b[34m"
+#define ANSI_COLOR_MAGENTA "\x1b[35m"
+#define ANSI_COLOR_CYAN    "\x1b[36m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
 
 struct shared{
 	int value;
-};
+} my_shared;
 
 sem_t mutex;
+
+void* consumer (void *number);
 
 int main(){
 
@@ -42,7 +50,7 @@ int main(){
 	
 	int i;
 	for (i=0 ; i<NUM_CONSUMER; i++) {
-		pthread_create(&consumer_thread[i], NULL, consumer, (void *)i);
+		pthread_create(&consumer_thread[i], NULL, consumer, (void *)&i);
 	}
 	for (i=0 ; i<NUM_CONSUMER; i++) {
 		pthread_join(consumer_thread[i],NULL);
