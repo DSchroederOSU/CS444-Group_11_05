@@ -126,7 +126,7 @@ int main(int argc, char *argv[]) {
 		// barber thread.
 
 		allDone = 1;
-		//sem_post(&customer); //wake barber to allow exit
+		sem_post(&barberSleep); //wake barber to allow exit
 		pthread_join(barber_thread, NULL);
 		
 		return 0;
