@@ -25,7 +25,7 @@ Implement a mutual exclusion solution that meets the above constraints.
 #include <immintrin.h>
 #include <semaphore.h>
 
-#define NUM_CONSUMER 10
+#define NUM_CONSUMER 8
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_GREEN   "\x1b[32m"
 #define ANSI_COLOR_YELLOW  "\x1b[33m"
@@ -74,7 +74,7 @@ void* consumer (void *number)
 	
 	sem_wait(&mutex);
 	int val;
-	sem_getvalue(&mutex, val)
+	sem_getvalue(&mutex, &val);
 	printf("Value of mutex is: %d\n", val);
 	
 	
