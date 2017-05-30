@@ -70,5 +70,12 @@ void* consumer (void *number)
 	//check if resource has < 3 threads
 	int num = *(int *)number;
 	printf(ANSI_COLOR_RED "Customer %d is alive.\n" ANSI_COLOR_RESET, num);
+	fflush(stdout);
+	
+	sem_wait(&mutex);
+	printf("Value of mutex is: %d\n", &mutex);
+	
+	
+	
 
 }
