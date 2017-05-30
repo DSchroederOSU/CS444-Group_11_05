@@ -60,6 +60,7 @@ struct shared{
 } my_shared;
 
 sem_t mutex;
+sem_t is_full;
 
 void* consumer (void *number);
 int get_random_sleep(int min, int max);
@@ -68,11 +69,12 @@ void init_genrand(unsigned long s);
 void init_by_array(unsigned long init_key[], int key_length);
 unsigned long genrand_int32(void);
 int rdrand(int min, int max);
-
+int full_flag = 0;
 
 int main(){
 
 	sem_init(&mutex, 0, 3);  //assign value of three
+	sem_init(&is_full, 0, 0);  //if 3 are in resource
 	
 	pthread_t consumer_thread[NUM_CONSUMER];
 	int consumers[NUM_CONSUMER];
@@ -99,13 +101,32 @@ void* consumer (void *number)
 	fflush(stdout);
 	
 	sem_wait(&mutex);
-	int val;
-	sem_getvalue(&mutex, &val);
 	
+	while(full_flag != 0){
+		sem_wait(&is_full);
+		//check is full then release
+		int val;
+		sem_getvalue(&mutex, &val);
+		if(val == 0){
+			full_flag = 0;
+		}
+		sem_post(&is_full);
+	}
 	printf(ANSI_COLOR_RED "Customer %d has the resource, number of thread is %d.\n" ANSI_COLOR_RESET, num, (3 - val));
 	int sleeptime = get_random_sleep(3, 6);
 	sleep(sleeptime);
+	
+	
+	sem_wait(&is_full);
+		//check is full then release
+	int val;
+	sem_getvalue(&mutex, &val);
+		if(val == 2){
+			full_flag = 1;
+		}
+	sem_post(&is_full);
 	sem_post(&mutex);
+	
 	
 	
 
