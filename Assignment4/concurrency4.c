@@ -30,6 +30,14 @@ Write a solution that guarantees these constraints.
 #include <immintrin.h>
 #include <semaphore.h>
 
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_YELLOW  "\x1b[33m"
+#define ANSI_COLOR_BLUE    "\x1b[34m"
+#define ANSI_COLOR_MAGENTA "\x1b[35m"
+#define ANSI_COLOR_CYAN    "\x1b[36m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
+
 // The maximum number of customer threads.
 #define MAX_CUSTOMERS 25
 #define N 624
@@ -137,13 +145,13 @@ void *cust(void *number) {
 		sem_wait(&mutex); 
 	
 		if(customers == n){
-			printf("No seats available, leaving store.\n");
+			printf(ANSI_COLOR_RED "No seats available, leaving store.\n" ANSI_COLOR_RESET);
 			fflush(stdout); 
 			sem_post(&mutex); 
 		}
 		else{
 		customers += 1;
-		printf("Customer %d entering waiting room.\n", num);
+		printf(ANSI_COLOR_RED "Customer %d entering waiting room.\n" ANSI_COLOR_RESET, num);
 		fflush(stdout); 
 		sem_post(&mutex); 
 		
@@ -154,14 +162,14 @@ void *cust(void *number) {
 		sem_post(&waitingRoom);
 		
 		// Wake up the barber...
-  	    printf("Customer %d waking the barber.\n", num);
+		printf(ANSI_COLOR_RED "Customer %d waking the barber.\n" ANSI_COLOR_RESET, num);
   		sem_post(&barberSleep);
   		
 		// Wait for the barber to finish cutting your hair.
     	sem_wait(&customerWait); 
 		// Give up the chair.
    		sem_post(&barberChair);
-   		printf("Customer %d leaving barber shop.\n", num);
+   		printf(ANSI_COLOR_RED "Customer %d leaving barber shop.\n" ANSI_COLOR_RESET, num);
 		sem_wait(&mutex); 
 		customers -= 1;
 		sem_post(&mutex); 
