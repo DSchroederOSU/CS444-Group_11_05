@@ -34,12 +34,15 @@ show: $(TRG)
 showps: $(PSF)
 	@for i in $(PSF) ; do $(GH) $$i & done
 
-all: pdf concurrency4
+all: pdf concurrency4a concurrency4b
 
-prog:
-	gcc concurrency4.c -Wall -o concurrency4 -lpthread -lm
+concurrency4a:
+	gcc concurrency4a.c -Wall -o concurrency4a -lpthread -lm
+
+concurrency4b:
+	gcc concurrency4b.c -Wall -o concurrency4b -lpthread -lm
 
 clean:
-	rm -f *.pdf *.ps *.dvi *.out *.log *.aux *.bbl *.blg *.pyg *.o concurrency4
+	rm -f *.pdf *.ps *.dvi *.out *.log *.aux *.bbl *.blg *.pyg *.o concurrency4a concurrency4b
 
 .PHONY: all show clean ps pdf showps

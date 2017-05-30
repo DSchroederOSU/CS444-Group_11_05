@@ -1,31 +1,7 @@
-/*
-THE SLEEPING BARBER PROBLEM
-
-A barbershop consists of a waiting room with n chairs, and the
-barber room containing the barber chair. If there are no customers
-to be served, the barber goes to sleep. If a customer enters the
-barbershop and all chairs are occupied, then the customer leaves
-the shop. If the barber is busy, but chairs are available, then the
-customer sits in one of the free chairs. If the barber is asleep, the
-customer wakes up the barber. Write a program to coordinate the
-barber and the customers.
-
-To make the problem a little more concrete, I added the following information:
-• Customer threads should invoke a function named getHairCut.
-• If a customer thread arrives when the shop is full, it can invoke balk,
-which does not return.
-• The barber thread should invoke cutHair.
-• When the barber invokes cutHair there should be exactly one thread
-invoking getHairCut concurrently.
-Write a solution that guarantees these constraints.
-*/
-
 #define _REENTRANT
-
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
-
 #include <pthread.h>
 #include <immintrin.h>
 #include <semaphore.h>
@@ -60,8 +36,8 @@ static int mti = N + 1;
 // Function prototypes...
 void *cust(void *num);
 void *barb(void *);
-void cutHair();
-void getHairCut(int n);
+void cut_hair(int time);
+void get_hair_cut(int n);
 int rdrand(int min, int max);
 int barber_cut_time(int min, int max);
 int mt19937(int min, int max);
@@ -207,6 +183,7 @@ void *cust(void *number) {
 		sem_post(&waitingRoom);
 		
 		// Wait for the barber to finish cutting your hair.
+		get_hair_cut(num);
 		sem_wait(&customerWait); 
 		// Give up the chair.
 		sem_wait(&mutex); 
@@ -232,9 +209,7 @@ void *barb(void *b) {
 			int time = barber_cut_time(3, 7);
 			printf(ANSI_COLOR_GREEN "Barber is cutting hair for %d seconds...\n" ANSI_COLOR_RESET, time);
 			fflush(stdout); 
-			/******** cut_hair() ********/
-			sleep(time);
-			/****************************/
+			cut_hair(time);
 			printf(ANSI_COLOR_GREEN "Barber done with haircut...\n" ANSI_COLOR_RESET);
 			fflush(stdout);  
 			sem_post(&customerWait);
@@ -246,6 +221,16 @@ void *barb(void *b) {
 	fflush(stdout);
 
 	return NULL; 
+}
+
+void cut_hair(int time)
+{
+	sleep(time);
+}
+
+void get_hair_cut(int num)
+{
+	printf(ANSI_COLOR_RED "Customer %d is getting hair cut.\n" ANSI_COLOR_RESET, num);
 }
 
 int barber_cut_time(int min, int max)
