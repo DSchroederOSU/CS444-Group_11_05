@@ -201,5 +201,3 @@ int main(int argc, char* arvg[])
 
 	return 0;
 }
-Contact GitHub API Training Shop Blog About
-© 2017 GitHub, Inc. Terms Privacy Security Status Help
