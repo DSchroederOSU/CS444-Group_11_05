@@ -86,6 +86,9 @@ void * smoker_func(void * arg)
 
 	while ( 1 ) {
 		sem_wait(&ingr[val]);
+		printf(COLOR_RED "SMOKER 0: Waiting for tabacco and matches...\n" COLOR_RESET);
+		printf(COLOR_YELLOW "SMOKER 1: Waiting for paper and matches...\n" COLOR_RESET);
+		printf(COLOR_CYAN "SMOKER 2: Waiting for paper and tabacco...\n" COLOR_RESET);
 		switch(val) {
 			case 0:	printf(COLOR_RED "SMOKER %d: Gathering tabacco and matches. Smoking..." COLOR_RESET, val);
 				fflush(stdout);
