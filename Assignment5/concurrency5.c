@@ -6,6 +6,7 @@
  * Spring 2017
  */
 
+#define _REENTRANT
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -21,229 +22,224 @@
 #define COLOR_CYAN    "\x1b[36m"
 #define COLOR_RESET   "\x1b[0m"
 
-sem_t agentSem;
-sem_t paper;
-sem_t tabacco;
-sem_t match;
+#define N 624
+#define M 397
+#define MATRIX_A 0x9908b0dfUL
+#define UPPER_MASK 0x80000000UL
+#define LOWER_MASK 0x7fffffffUL
 
-sem_t paperSmoker;
-sem_t tabaccoSmoker;
-sem_t matchSmoker;
+#define PAPER 0
+#define TABACCO 1
+#define MATCHES 1
 
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+/* This calls assembler instruction rdrand and places the random number value into *arand */
+int rdrand64_step (unsigned long long *arand)
+{
+	unsigned char ok;
+	__asm__ __volatile__ ("rdrand %0; setc %1" : "=r" (*arand), "=qm" (ok));
+	return (int) ok;
+}
 
-int PAPER, TABACCO, MATCH;
+static unsigned long mt[N];
+static int mti = N + 1;
 
-void * smokerA_func();
-void * smokerB_func();
-void * smokerC_func();
-void * helperA_func();
-void * helperB_func();
-void * helperC_func();
-void * agentA_func();
-void * agentB_func();
-void * agentC_func();
+// 0 = Paper, 1 = Tabacco, 2 = Matches
+sem_t smoker[3];
+sem_t ingr[3];
 
+void * smoker_func(void * arg);
+void * enabler_func();
+int random_func(int min, int max);
 
 int main() {
 
-	pthread_t agentA, agentB, agentC;
-	pthread_t helperA, helperB, helperC;
-	pthread_t smokerA, smokerB, smokerC;
+	pthread_t smokers[3];
+	pthread_t enabler;
+	int arg[3], i;
 
-	sem_init(&agentSem, 0, 1);
-	sem_init(&paper, 0, 0);
-	sem_init(&tabacco, 0, 0);
-	sem_init(&match, 0, 0);
-	sem_init(&paperSmoker, 0, 0);
-	sem_init(&tabaccoSmoker, 0, 0);
-	sem_init(&matchSmoker, 0, 0);
+	sem_init(&smoker[PAPER], 0, -1);
+	sem_init(&smoker[TABACCO], 0, -1);
+	sem_init(&smoker[MATCHES], 0, -1);
+	sem_init(&ingr[PAPER], 0, -1);
+	sem_init(&ingr[TABACCO], 0, -1);
+	sem_init(&ingr[MATCHES], 0, -1);
 
-	PAPER = 0;
-	TABACCO = 0;
-	MATCH = 0;
+	for (i = 0; i < 3; i++) {
+		arg[i] = i;
+		pthread_create(&smokers[i], NULL, smoker_func, (void*)&arg[i]);
+	}
+	pthread_create(&enabler, NULL, enabler_func, NULL);
 
-	pthread_create(&smokerA, NULL, smokerA_func, NULL);
-	pthread_create(&smokerB, NULL, smokerB_func, NULL);
-	pthread_create(&smokerC, NULL, smokerC_func, NULL);
-
-	pthread_create(&helperA, NULL, helperA_func, NULL);
-	pthread_create(&helperB, NULL, helperB_func, NULL);
-	pthread_create(&helperC, NULL, helperC_func, NULL);
-
-	pthread_create(&agentA, NULL, agentA_func, NULL);
-	pthread_create(&agentB, NULL, agentB_func, NULL);
-	pthread_create(&agentC, NULL, agentC_func, NULL);
-
-	//stuff infinitely happening in threads. Main ends here
-
-	pthread_join(agentA, NULL);
-	pthread_join(agentB, NULL);
-	pthread_join(agentC, NULL);
-
-	pthread_join(helperA, NULL);
-	pthread_join(helperB, NULL);
-	pthread_join(helperC, NULL);
-
-	pthread_join(smokerA, NULL);
-	pthread_join(smokerB, NULL);
-	pthread_join(smokerC, NULL);
+	pthread_join(enabler, NULL);
+	for (i = 0; i < 3; i++) {
+		pthread_join(smokers[i], NULL);
+	}
 
 	return 0;
 }
 
-void *smokerA_func()
+void *smoker_func(void * arg)
 {
+	int val = *((int*) arg);
 	while (1) {
-		printf(COLOR_RED "SMOKER A: Waiting for tabacco and match.\n" COLOR_RESET);
-		fflush(stdout);
-		sem_wait(&paperSmoker);
-		printf(COLOR_CYAN "SMOKER A: Taking tabacco and match. Adding paper and smoking... " COLOR_RESET);
-		fflush(stdout);
-		sleep(5); //Smoking
-		printf(COLOR_CYAN "Done.\n\n" COLOR_RESET);
-		fflush(stdout);
-		sem_post(&agentSem);
-	}
-	return NULL;
-}
-
-void *smokerB_func()
-{
-	while (1) {
-		printf(COLOR_RED "SMOKER B: Waiting for paper and match.\n" COLOR_RESET);
-		fflush(stdout);
-		sem_wait(&tabaccoSmoker);
-		printf(COLOR_CYAN "SMOKER B: Taking paper and match. Adding tabacco and smoking... " COLOR_RESET);
-		fflush(stdout);
-		sleep(5); //Smoking
-		printf(COLOR_CYAN "Done.\n\n" COLOR_RESET);
-		fflush(stdout);
-		sem_post(&agentSem);
-	}
-	return NULL;
-}
-
-void *smokerC_func()
-{
-	while (1) {
-		printf(COLOR_RED "SMOKER C: Waiting for paper and tabacco.\n" COLOR_RESET);
-		fflush(stdout);
-		sem_wait(&matchSmoker);
-		printf(COLOR_CYAN "SMOKER C: Taking paper and tabacco. Adding match and smoking... " COLOR_RESET);
-		fflush(stdout);
-		sleep(7); //Smoking
-		printf(COLOR_CYAN "Done.\n\n" COLOR_RESET);
-		fflush(stdout);
-		sem_post(&agentSem);
-	}
-	return NULL;
-}
-
-void *helperA_func()
-{
-	while (1) {
-		sem_wait(&paper);
-		pthread_mutex_lock(&mutex);
-		if (MATCH) {
-			MATCH = 0;
-			sem_post(&tabaccoSmoker);
-			printf(COLOR_YELLOW "HELPER: Gathering paper and match. Signaling tabacco Smoker.\n" COLOR_RESET);
-			fflush(stdout);
+		sem_wait(&ingr[val]);
+		printf(COLOR_RED "SMOKER 0: Waiting for tabacco and matches...\n" COLOR_RESET);
+		printf(COLOR_YELLOW "SMOKER 1: Waiting for paper and matches...\n" COLOR_RESET);
+		printf(COLOR_CYAN "SMOKER 2: Waiting for paper and tabacco...\n\n" COLOR_RESET);
+		switch(val) {
+			case 0:	printf(COLOR_RED "SMOKER %d: Gathering tabacco and matches. Smoking..." COLOR_RESET, val);
+				fflush(stdout);
+				sleep(5);
+				printf(COLOR_RED " Done.\n\n" COLOR_RESET);
+				sem_post(&smoker[val]);
+				break;
+			case 1:	printf(COLOR_YELLOW "SMOKER %d: Gathering paper and matches. Smoking..." COLOR_RESET, val);
+				fflush(stdout);
+				sleep(5);
+				printf(COLOR_YELLOW " Done.\n\n" COLOR_RESET);
+				sem_post(&smoker[val]);
+				break;
+			case 2:	printf(COLOR_CYAN "SMOKER %d: Gathering paper and tabacco. Smoking..." COLOR_RESET, val);
+				fflush(stdout);
+				sleep(5);
+				printf(COLOR_CYAN " Done.\n\n" COLOR_RESET);
+				sem_post(&smoker[val]);
+				break;
 		}
-		else if (TABACCO) {
-			TABACCO = 0;
-			sem_post(&matchSmoker);
-			printf(COLOR_YELLOW "HELPER: Gathering paper and tabacco. Signaling match Smoker.\n" COLOR_RESET);
-			fflush(stdout);
-		}
-		else
-			PAPER = 1;
-		pthread_mutex_unlock(&mutex);
-	}
+			}
 	return NULL;
 }
 
-void *helperB_func()
+void *enabler_func()
 {
-	while (1) {
-		sem_wait(&tabacco);
-		pthread_mutex_lock(&mutex);
-		if (MATCH) {
-			MATCH = 0;
-			sem_post(&paperSmoker);
-			printf(COLOR_YELLOW "HELPER: Gathering tabacco and match. Signaling paper Smoker.\n" COLOR_RESET);
-			fflush(stdout);
+	int ingr_val;
+	while(1) {
+		ingr_val = random_func(0,2);
+		switch(ingr_val) {
+			case 0:	printf(COLOR_GREEN "ENABLER: Putting tabacco and matches on the table. \n" COLOR_RESET);
+				break;
+			case 1:	printf(COLOR_GREEN "ENABLER: Putting paper and matches on the table. \n" COLOR_RESET);
+				break;
+			case 2:	printf(COLOR_GREEN "ENABLER: Putting paper and tabacco on the table. \n" COLOR_RESET);
+				break;
 		}
-		else if (PAPER) {
-			PAPER = 0;
-			sem_post(&matchSmoker);
-			printf(COLOR_YELLOW "HELPER: Gathering paper and tabacco. Signaling match Smoker.\n" COLOR_RESET);
-			fflush(stdout);
-		}
-		else
-			TABACCO = 1;
-		pthread_mutex_unlock(&mutex);
-	}
-	return NULL;
-}
-
-void *helperC_func()
-{
-	while (1) {
-		sem_wait(&match);
-		pthread_mutex_lock(&mutex);
-		if (PAPER) {
-			PAPER = 0;
-			sem_post(&tabaccoSmoker);
-			printf(COLOR_YELLOW "HELPER: Gathering paper and match. Signaling tabacco Smoker.\n" COLOR_RESET);
-			fflush(stdout);
-		}
-		else if (TABACCO) {
-			TABACCO = 0;
-			sem_post(&paperSmoker);
-			printf(COLOR_YELLOW "HELPER: Gathering tabacco and match. Signaling paper Smoker.\n" COLOR_RESET);
-			fflush(stdout);
-		}
-		else
-			MATCH = 1;
-		pthread_mutex_unlock(&mutex);
-	}
-	return NULL;
-}
-
-void *agentA_func()
-{
-	while (1) {
-		sem_wait(&agentSem);
-		printf(COLOR_GREEN "AGENT: Putting paper and tabacco on the table. \n" COLOR_RESET);
 		fflush(stdout);
-		sem_post(&tabacco);
-		sem_post(&paper);
+		sem_post(&ingr[ingr_val]);
+
+		printf(COLOR_GREEN "ENABLER: Waiting for smoker to be done.\n\n" COLOR_RESET);
+		sem_wait(&smoker[ingr_val]);
 	}
 	return NULL;
 }
 
-void *agentB_func()
+int rdrand(int min, int max)
 {
-	while (1) {
-		sem_wait(&agentSem);
-		printf(COLOR_GREEN "AGENT: Putting paper and a match on the table. \n" COLOR_RESET);
-		fflush(stdout);
-		sem_post(&paper);
-		sem_post(&match);
+	unsigned long long arand;
+	int attempt_limit_exceeded = -1;
+	int attempt_limit = 10;
+	int i;
+	for (i = 0; i < attempt_limit; i++) {
+		/* if rdrand64_step returned a usable random value */
+		if (rdrand64_step(&arand)) {
+			if (min == -1 && max == -1)
+				return (int)arand;
+			else
+				return (arand % (unsigned long long)(max - min + 1)) + min;
+		}
 	}
-	return NULL;
+	return attempt_limit_exceeded;
 }
 
-void *agentC_func()
+void init_genrand(unsigned long s)
 {
-	while (1) {
-		sem_wait(&agentSem);
-		printf(COLOR_GREEN "AGENT: Putting tabacco and a match on the table. \n" COLOR_RESET);
-		fflush(stdout);
-		sem_post(&tabacco);
-		sem_post(&match);
+	mt[0]= s & 0xffffffffUL;
+	for (mti=1; mti<N; mti++) {
+		mt[mti] = (1812433253UL * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti);
+		mt[mti] &= 0xffffffffUL;
 	}
-	return NULL;
+}
+
+unsigned long genrand_int32(void)
+{
+	unsigned long y;
+	static unsigned long mag01[2]={0x0UL, MATRIX_A};
+	if (mti >= N) {
+		int kk;
+		if (mti == N+1)
+			init_genrand(5489UL);
+		for (kk=0;kk<N-M;kk++) {
+			y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
+			mt[kk] = mt[kk+M] ^ (y >> 1) ^ mag01[y & 0x1UL];
+		}
+		for (;kk<N-1;kk++) {
+			y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
+			mt[kk] = mt[kk+(M-N)] ^ (y >> 1) ^ mag01[y & 0x1UL];
+		}
+		y = (mt[N-1]&UPPER_MASK)|(mt[0]&LOWER_MASK);
+		mt[N-1] = mt[M-1] ^ (y >> 1) ^ mag01[y & 0x1UL];
+		mti = 0;
+	}
+	y = mt[mti++];
+	y ^= (y >> 11);
+	y ^= (y << 7) & 0x9d2c5680UL;
+	y ^= (y << 15) & 0xefc60000UL;
+	y ^= (y >> 18);
+	return y;
+}
+
+int mt19937(int min, int max)
+{
+	if (min == -1 && max == -1)
+		return (int) genrand_int32();
+	else
+		return (genrand_int32() % (unsigned long long)(max - min + 1)) + min;
+}
+
+void init_by_array(unsigned long init_key[], int key_length)
+{
+	int i;
+	int j;
+	int k;
+	init_genrand(19650218UL);
+	i = 1;
+	j = 0;
+	k = (N > key_length ? N : key_length);
+	for (; k; k--) {
+		mt[i] = (mt[i] ^ ((mt[i-1] ^ (mt[i-1] >> 30)) * 1664525UL)) + init_key[j] + j;
+		mt[i] &= 0xffffffffUL;
+		i++;
+		j++;
+		if (i>=N) {
+			mt[0] = mt[N-1];
+			i=1;
+		}
+		if (j>=key_length)
+			j=0;
+	}
+	for (k=N-1; k; k--) {
+		mt[i] = (mt[i] ^ ((mt[i-1] ^ (mt[i-1] >> 30)) * 1566083941UL)) - i;
+		mt[i] &= 0xffffffffUL;
+		i++;
+		if (i>=N) {
+			mt[0] = mt[N-1];
+			i=1;
+		}
+	}
+	mt[0] = 0x80000000UL;
+}
+
+int random_func(int min, int max)
+{
+	int result;
+	unsigned int eax;
+	unsigned int ebx;
+	unsigned int ecx;
+	unsigned int edx;
+	eax = 0x01;
+	__asm__ __volatile__("cpuid;" : "=a"(eax), "=b"(ebx), "=c"(ecx), "=d"(edx) : "a"(eax));
+	if (ecx & 0x40000000)
+		result = rdrand(min, max);
+	else
+		result = mt19937(min, max);
+	return result;
 }
