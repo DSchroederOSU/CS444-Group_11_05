@@ -1,22 +1,3 @@
-Skip to content
-This repository
-Search
-Pull requests
-Issues
-Marketplace
-Gist
- @DSchroederOSU
- Sign out
- Watch 1
-  Star 0
- Fork 1 EvanPurkhiser/CS-SmokersProblem
- Code  Issues 0  Pull requests 0  Projects 0  Wiki Insights 
-Branch: master Find file Copy pathCS-SmokersProblem/smoke.c
-fac419f  on Apr 16, 2013
-@EvanPurkhiser EvanPurkhiser Add agent ID to the output
-1 contributor
-RawBlameHistory     
-204 lines (160 sloc)  4.85 KB
 #include <pthread.h>
 #include <semaphore.h>
 #include <stdbool.h>
