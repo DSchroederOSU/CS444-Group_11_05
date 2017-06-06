@@ -65,7 +65,7 @@ void* pusher(void* arg)
 {
 	int pusher_id = *(int*) arg;
 
-	for (int i = 0; i < 12; ++i)
+	while(1)
 	{
 		// Wait for this pusher to be needed
 		sem_wait(&pusher_semaphores[pusher_id]);
