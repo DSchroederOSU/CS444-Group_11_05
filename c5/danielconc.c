@@ -33,7 +33,7 @@ void* smoker(void* arg)
 	int type_id   = smoker_id % 3;
 
 	// Smoke 3 times
-	for (int i = 0; i < 3; ++i)
+	while(1)
 	{
 		printf("\033[0;37mSmoker %d \033[0;31m>>\033[0m Waiting for %s\n",
 			smoker_id, smoker_types[type_id]);
@@ -101,7 +101,7 @@ void* agent(void* arg)
 {
 	int agent_id = *(int*) arg;
 
-	for (int i = 0; i < 6; ++i)
+	while(1)
 	{
 		usleep(rand() % 200000);
 
