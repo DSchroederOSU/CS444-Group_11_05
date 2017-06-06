@@ -93,19 +93,19 @@ void * smoker_func(void * arg)
 			case 0:	printf(COLOR_RED "SMOKER %d: Gathering tabacco and matches. Smoking..." COLOR_RESET, val);
 				fflush(stdout);
 				sleep(5);
-				printf(COLOR_RED " Done.\n" COLOR_RESET);
+				printf(COLOR_RED " Done.\n\n" COLOR_RESET);
 				sem_post(&smoker[val]);
 				break;
 			case 1:	printf(COLOR_YELLOW "SMOKER %d: Gathering paper and matches. Smoking..." COLOR_RESET, val);
 				fflush(stdout);
 				sleep(5);
-				printf(COLOR_YELLOW " Done.\n" COLOR_RESET);
+				printf(COLOR_YELLOW " Done.\n\n" COLOR_RESET);
 				sem_post(&smoker[val]);
 				break;
 			case 2:	printf(COLOR_CYAN "SMOKER %d: Gathering paper and tabacco. Smoking..." COLOR_RESET, val);
 				fflush(stdout);
 				sleep(5);
-				printf(COLOR_CYAN " Done.\n" COLOR_RESET);
+				printf(COLOR_CYAN " Done.\n\n" COLOR_RESET);
 				sem_post(&smoker[val]);
 				break;
 		}
@@ -131,7 +131,7 @@ void * enabler_func()
 		fflush(stdout);
 		sem_post(&ingr[ingr_val]);
 
-		printf(COLOR_GREEN "ENABLER: Waiting for smoker to be done.\n" COLOR_RESET);
+		printf(COLOR_GREEN "ENABLER: Waiting for smoker to be done.\n\n" COLOR_RESET);
 		sem_wait(&smoker[ingr_val]);
 	}
 
