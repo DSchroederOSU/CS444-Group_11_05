@@ -13,6 +13,8 @@
 #include <immintrin.h>
 #include <semaphore.h>
 
+#define GENERALIZED_MODE 0
+
 #define COLOR_RED     "\x1b[31m"
 #define COLOR_GREEN   "\x1b[32m"
 #define COLOR_YELLOW  "\x1b[33m"
@@ -98,12 +100,17 @@ void *smokerA_func()
 		printf(COLOR_RED "SMOKER A: Waiting for tabacco and match.\n" COLOR_RESET);
 		fflush(stdout);
 		sem_wait(&paperSmoker);
-		printf(COLOR_CYAN "SMOKER A: Taking tabacco and match. Adding paper and smoking... " COLOR_RESET);
+		#if GENERALIZED_MODE!=0
+		sem_post(&agentSem);
+		#endif
+		printf(COLOR_CYAN "SMOKER: Taking tabacco and match. Adding paper and smoking... \n" COLOR_RESET);
 		fflush(stdout);
 		sleep(5); //Smoking
 		printf(COLOR_CYAN "Done.\n\n" COLOR_RESET);
 		fflush(stdout);
+		#if GENERALIZED_MODE==0
 		sem_post(&agentSem);
+		#endif
 	}
 	return NULL;
 }
@@ -114,12 +121,17 @@ void *smokerB_func()
 		printf(COLOR_RED "SMOKER B: Waiting for paper and match.\n" COLOR_RESET);
 		fflush(stdout);
 		sem_wait(&tabaccoSmoker);
-		printf(COLOR_CYAN "SMOKER B: Taking paper and match. Adding tabacco and smoking... " COLOR_RESET);
+		#if GENERALIZED_MODE!=0
+		sem_post(&agentSem);
+		#endif
+		printf(COLOR_CYAN "SMOKER: Taking paper and match. Adding tabacco and smoking... \n" COLOR_RESET);
 		fflush(stdout);
 		sleep(5); //Smoking
 		printf(COLOR_CYAN "Done.\n\n" COLOR_RESET);
 		fflush(stdout);
+		#if GENERALIZED_MODE==0
 		sem_post(&agentSem);
+		#endif
 	}
 	return NULL;
 }
@@ -130,12 +142,17 @@ void *smokerC_func()
 		printf(COLOR_RED "SMOKER C: Waiting for paper and tabacco.\n" COLOR_RESET);
 		fflush(stdout);
 		sem_wait(&matchSmoker);
-		printf(COLOR_CYAN "SMOKER C: Taking paper and tabacco. Adding match and smoking... " COLOR_RESET);
+		#if GENERALIZED_MODE!=0
+		sem_post(&agentSem);
+		#endif
+		printf(COLOR_CYAN "SMOKER: Taking paper and tabacco. Adding match and smoking... \n" COLOR_RESET);
 		fflush(stdout);
-		sleep(7); //Smoking
+		sleep(5); //Smoking
 		printf(COLOR_CYAN "Done.\n\n" COLOR_RESET);
 		fflush(stdout);
+		#if GENERALIZED_MODE==0
 		sem_post(&agentSem);
+		#endif
 	}
 	return NULL;
 }
@@ -146,19 +163,19 @@ void *helperA_func()
 		sem_wait(&paper);
 		pthread_mutex_lock(&mutex);
 		if (MATCH) {
-			MATCH = 0;
+			MATCH -= 1;
 			sem_post(&tabaccoSmoker);
 			printf(COLOR_YELLOW "HELPER: Gathering paper and match. Signaling tabacco Smoker.\n" COLOR_RESET);
 			fflush(stdout);
 		}
 		else if (TABACCO) {
-			TABACCO = 0;
+			TABACCO -= 1;
 			sem_post(&matchSmoker);
 			printf(COLOR_YELLOW "HELPER: Gathering paper and tabacco. Signaling match Smoker.\n" COLOR_RESET);
 			fflush(stdout);
 		}
 		else
-			PAPER = 1;
+			PAPER += 1;
 		pthread_mutex_unlock(&mutex);
 	}
 	return NULL;
@@ -170,19 +187,20 @@ void *helperB_func()
 		sem_wait(&tabacco);
 		pthread_mutex_lock(&mutex);
 		if (MATCH) {
-			MATCH = 0;
+			MATCH -= 1;
 			sem_post(&paperSmoker);
 			printf(COLOR_YELLOW "HELPER: Gathering tabacco and match. Signaling paper Smoker.\n" COLOR_RESET);
 			fflush(stdout);
 		}
 		else if (PAPER) {
-			PAPER = 0;
+			PAPER -= 1;
 			sem_post(&matchSmoker);
 			printf(COLOR_YELLOW "HELPER: Gathering paper and tabacco. Signaling match Smoker.\n" COLOR_RESET);
 			fflush(stdout);
 		}
 		else
-			TABACCO = 1;
+			TABACCO += 1;
+
 		pthread_mutex_unlock(&mutex);
 	}
 	return NULL;
@@ -193,20 +211,22 @@ void *helperC_func()
 	while (1) {
 		sem_wait(&match);
 		pthread_mutex_lock(&mutex);
+
 		if (PAPER) {
-			PAPER = 0;
+			PAPER -= 1;
 			sem_post(&tabaccoSmoker);
 			printf(COLOR_YELLOW "HELPER: Gathering paper and match. Signaling tabacco Smoker.\n" COLOR_RESET);
 			fflush(stdout);
 		}
 		else if (TABACCO) {
-			TABACCO = 0;
+			TABACCO -= 1;
 			sem_post(&paperSmoker);
 			printf(COLOR_YELLOW "HELPER: Gathering tabacco and match. Signaling paper Smoker.\n" COLOR_RESET);
 			fflush(stdout);
 		}
 		else
-			MATCH = 1;
+			MATCH += 1;
+
 		pthread_mutex_unlock(&mutex);
 	}
 	return NULL;
@@ -220,6 +240,9 @@ void *agentA_func()
 		fflush(stdout);
 		sem_post(&tabacco);
 		sem_post(&paper);
+		#if GENERALIZED_MODE!=0
+		sleep(4);
+		#endif
 	}
 	return NULL;
 }
@@ -232,6 +255,9 @@ void *agentB_func()
 		fflush(stdout);
 		sem_post(&paper);
 		sem_post(&match);
+		#if GENERALIZED_MODE!=0
+		sleep(4);
+		#endif
 	}
 	return NULL;
 }
@@ -244,6 +270,9 @@ void *agentC_func()
 		fflush(stdout);
 		sem_post(&tabacco);
 		sem_post(&match);
+		#if GENERALIZED_MODE!=0
+		sleep(4);
+		#endif
 	}
 	return NULL;
 }
