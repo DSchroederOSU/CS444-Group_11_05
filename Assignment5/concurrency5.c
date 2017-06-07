@@ -103,7 +103,7 @@ void *smokerA_func()
 		#if GENERALIZED_MODE!=0
 		sem_post(&agentSem);
 		#endif
-		printf(COLOR_CYAN "SMOKER: Taking tabacco and match. Adding paper and smoking... \n" COLOR_RESET);
+		printf(COLOR_CYAN "SMOKER A: Taking tabacco and match. Adding paper and smoking... \n" COLOR_RESET);
 		fflush(stdout);
 		sleep(5); //Smoking
 		printf(COLOR_CYAN "Done.\n\n" COLOR_RESET);
@@ -124,7 +124,7 @@ void *smokerB_func()
 		#if GENERALIZED_MODE!=0
 		sem_post(&agentSem);
 		#endif
-		printf(COLOR_CYAN "SMOKER: Taking paper and match. Adding tabacco and smoking... \n" COLOR_RESET);
+		printf(COLOR_CYAN "SMOKER B: Taking paper and match. Adding tabacco and smoking... \n" COLOR_RESET);
 		fflush(stdout);
 		sleep(5); //Smoking
 		printf(COLOR_CYAN "Done.\n\n" COLOR_RESET);
@@ -145,7 +145,7 @@ void *smokerC_func()
 		#if GENERALIZED_MODE!=0
 		sem_post(&agentSem);
 		#endif
-		printf(COLOR_CYAN "SMOKER: Taking paper and tabacco. Adding match and smoking... \n" COLOR_RESET);
+		printf(COLOR_CYAN "SMOKER C: Taking paper and tabacco. Adding match and smoking... \n" COLOR_RESET);
 		fflush(stdout);
 		sleep(5); //Smoking
 		printf(COLOR_CYAN "Done.\n\n" COLOR_RESET);
