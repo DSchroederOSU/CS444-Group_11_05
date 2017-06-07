@@ -35,8 +35,8 @@
   urlcolor = black,
   pdfauthor = {\name},
   pdfkeywords = {cs444},
-  pdftitle = {CS 444 Assignment III: I/O Elevators},
-  pdfsubject = {CS 444 Assignment 3},
+  pdftitle = {CS 444 Assignment IV: The Slob Slab},
+  pdfsubject = {CS 444 Assignment 4},
   pdfpagemode = UseNone
 }
 
@@ -49,10 +49,10 @@
 {\scshape\Large CS 444 Operating Systems II\par}
 {\scshape\Large Spring 2017\par}
 \vspace{1cm}
-{\huge\bfseries Assignment III: Encrypted Block Device\par}
+{\huge\bfseries Assignment IV: The Slob Slab\par}
 \vspace{2cm}
 \begin{abstract}
-This document is a summary of Assignment 3 for CS 444 Operating Systems II at Oregon State University Spring 2017. This document includes the design and implementation of the kernel assignment to implement an Encrypted Block Device, responses to the design and implimenation questions for the kernel and concurrency assignments, and a work log.
+This document is a summary of Assignment 4 for CS 444 Operating Systems II at Oregon State University Spring 2017. This document includes the design and implementation of the kernel assignment to implement the Slob Slab, responses to the design and implimenation questions for the kernel and concurrency assignments, and a work log.
 \end{abstract}
 \end{titlepage}
 
@@ -64,7 +64,7 @@ This document is a summary of Assignment 3 for CS 444 Operating Systems II at Or
 
 \medskip
 
-\noindent For our Encrypted Block Device implementation, we used a pre-established sbull.c driver example from {https://github.com/duxing2007/ldd3-examples-3.x/blob/master/sbull/sbull.c} as a basis for the driver. From there we implemented data encryption through...
+\noindent
 
 \bigskip
 
@@ -73,7 +73,7 @@ This document is a summary of Assignment 3 for CS 444 Operating Systems II at Or
 
 \medskip
 
-\noindent The point of this assignment was to learn how to use an API from the Linux kernel that has poor documentation and design an implementation based off of examples and outside resources.
+\noindent
 \bigskip
 
 \noindent\textbf{How did you personally approach the problem?}
@@ -81,7 +81,7 @@ This document is a summary of Assignment 3 for CS 444 Operating Systems II at Or
 
 \medskip
 
-\noindent We used an sbull.c implementation of a disc driver we found that has been updated to work with Linux 3.x systems. We {Add encryption} 
+\noindent
 \medskip
 
 \medskip
@@ -95,7 +95,7 @@ This document is a summary of Assignment 3 for CS 444 Operating Systems II at Or
 
 \medskip
 
-\noindent After designing our sbull.c driver, we added it to the .config file and used the insmod command to install the module. We then created a file system on the module with ``mkfs -t ext2 /dev/\textless dev-name\textgreater'' and mounted it with ``mount -t ext2 /dev/\textless dev-name\textgreater /mnt'' for read/write abilities. From here, we manipulated the filesystem and used a series of printk's to ensure that the data being written and read was encrypted based on the crypt key command parameter passed.
+\noindent
 
 \bigskip
 
@@ -114,25 +114,51 @@ This document is a summary of Assignment 3 for CS 444 Operating Systems II at Or
 
 \medskip
 
-\noindent The main point of this concurrency assignment was to 
+\noindent The main point of this concurrency assignment was to get more exposure to concurrent programming by implementing solutions to the Sleeping Barber Problem and a Mutual Exclusion problem. 
 
 \bigskip
 
+\subsection{The Sleeping Barber Problem}
 \noindent\textbf{How did you personally approach the problem?}
 \medskip
 
 \medskip
 
-\noindent info
+\noindent Our solution to the Sleeping Barber Problem was an implementation of the solution found in The Little Book of Semaphores by Allen B. Downey with some slight variations.\\
+We implemented a mutex that was used so customers could check how many customers were in the waiting room when they arrived. The problem required a MAX number of seats in the waiting room; so when this number was reached, an arriving customer left the store and did not receive a haircut.\\
+From there, we implemented 4 semaphores:
+\begin{itemize}
+\item 1 for the barber's chair to ensure only one customer thread was being serviced at a time.
+\item 1 semaphore was used to wake the barber and put him to sleep.
+\item Then we had a semaphore that had a value equal to the number of chairs available in the waiting room that was incremented as a customer arrived and decremented once they left.
+\item Our last semaphore was for the customer thread receiving a haircut to lock the thread until the barber thread was done ``cutting hair''.
+\end{itemize}
 
 \bigskip
 
 \noindent\textbf{How did you ensure your solution was correct?}
 \medskip
 
-\medskip
+\noindent We used color coordinated printf statements for the consumer threads and barber thread to print out the logic of the problem. Each action performed by the threads was printed to the console in such a way that the user could follow all of the semaphore wait and posts and could understand what was happening throughout the program.\\
+\medskip An example of our output is as follows:
 
-\noindent info
+{\fontfamily{pcr}\selectfont
+\noindent \textcolor{green}{Barber done with haircut...}\\
+\textcolor{red}{Customer 0 leaving barber shop.}\\
+\textcolor{red}{Customer 8 is getting hair cut.}\\
+\textcolor{green}{Barber is cutting hair for 4 seconds...}\\
+\textcolor{green}{Barber done with haircut...}\\
+\textcolor{red}{Customer 8 leaving barber shop.}\\
+\textcolor{red}{Customer 2 is getting hair cut.}\\
+\textcolor{green}{Barber is cutting hair for 7 seconds...}\\
+\textcolor{green}{Barber done with haircut...}\\
+\textcolor{red}{Customer 2 leaving barber shop.}\\
+\textcolor{red}{Customer 3 is getting hair cut.}\\
+\textcolor{green}{Barber is cutting hair for 3 seconds...}\\
+\textcolor{green}{Barber done with haircut...}\\
+\textcolor{red}{Customer 3 leaving barber shop.}\\
+\textcolor{green}{All customers have been serviced!}\\
+}
 \bigskip
 
 \noindent\textbf{What did you learn?}
@@ -140,9 +166,28 @@ This document is a summary of Assignment 3 for CS 444 Operating Systems II at Or
 
 \medskip
 
-\noindent info
+\noindent We learned how to use semaphores with values other than 1 or 0 to lock critical sections after an arbitrary number of increments. In actuality, this program was of very similar fashion to the previous concurrency assignments and followed similar implementation schemes.
 \medskip
 
+\subsection{Mutual Exclusion Problem}
+\noindent\textbf{How did you personally approach the problem?}
+\medskip
+
+\noindent For this problem, a mutually shared resources could be used by 3 threads at once, but no thread could begin using the resource until all three threads currently using were finished. To solve this problem, we used an is\_full flag to indicate that the resource was being used by 3 threads, and two int counters that counted the threads waiting for the resource and active threads using the resource. Our consumer thread function checks to see if there are three active threads using the resource and then sets a mutex to block the resource. As the threads finish their random consumption times, they decrement the active counter int and then release the mutex once all threads are finished.\\
+
+\bigskip
+
+\noindent\textbf{How did you ensure your solution was correct?}
+\medskip
+
+\noindent We used a series of printf statements that followed the program logic and printed everything that was happening in the program. For example, when a thread began using the resource, when a thread was blocked out and waiting, when the resource was full, etc... This allowed us to ensure that the program was functioning as the assignment required and allowed us to demo the program and show the TA how it was working.\\ 
+\bigskip
+
+\noindent\textbf{What did you learn?}
+\medskip
+
+\noindent We learned more about mutual exclusion of a shared resource in concurrent programming.
+\medskip
 
 \section{Version Control Log}
 \bigskip
