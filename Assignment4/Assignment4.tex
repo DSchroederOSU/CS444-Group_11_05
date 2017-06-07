@@ -59,21 +59,12 @@ This document is a summary of Assignment 4 for CS 444 Operating Systems II at Or
 \section{Kernel Assignment}
 \bigskip
 
-\noindent\textbf{Design}
-\medskip
-
-\medskip
-
-\noindent
-
-\bigskip
-
 \noindent\textbf{What do you think the main point of this assignment is?}
 \medskip
 
 \medskip
 
-\noindent
+\noindent The point of this kernel assignment was to become familiar with how memory management is done using the slob allocator and how the behavior can be changed from first fit to best fit depending on desired preference. It also taught us how to create and use our own system calls.
 \bigskip
 
 \noindent\textbf{How did you personally approach the problem?}
@@ -81,13 +72,7 @@ This document is a summary of Assignment 4 for CS 444 Operating Systems II at Or
 
 \medskip
 
-\noindent
-\medskip
-
-\medskip
-
-\noindent {Desired result}
-
+\noindent We first researched how \texttt{slob.c} works so we could identify the proper place to implement the change from first fit behavior to best fit. We found the part that puts the memory request in the first space found and changed it to instead note that space but continue looking through all other possible spaces before placing, keeping track of the current best fit it has found as it goes through. When it has checked all the possibilities it returns to the best fit that was found and does the placement there. In this way it will use the smallest page with enough room to put the request, that is, the space which is large enough but no larger than needed, as best fit directs. We then read about how to create and use system calls and made one that returns the claimed memory and one that returns the used memory so they could be used to compare the rate of fragmentation between the two slob files.
 \bigskip
 
 \noindent\textbf{How did you ensure your solution was correct?}
@@ -95,7 +80,7 @@ This document is a summary of Assignment 4 for CS 444 Operating Systems II at Or
 
 \medskip
 
-\noindent
+\noindent We tested the modified slob by first running the VM using the original slob that used first fit, then running our best fit slob and comparing the resulting fragmentation by using our system calls. We could also immediately tell the behavior was different when we changed to our slob because the VM start time was significantly longer, indicating that the kernel was indeed searching for the best place to put each memory request, necessarily making tasks take longer.
 
 \bigskip
 
@@ -104,7 +89,8 @@ This document is a summary of Assignment 4 for CS 444 Operating Systems II at Or
 
 \medskip
 
-\noindent everything.
+\noindent We learned different algorithms that can be used to decide memory managament behavior, and how they are implemented using a slob to allocate and free memory pages. We also learned how to implement and use system calls.
+\bigskip
 
 \section{Concurrency Assignment}
 \bigskip
@@ -119,6 +105,8 @@ This document is a summary of Assignment 4 for CS 444 Operating Systems II at Or
 \bigskip
 
 \subsection{The Sleeping Barber Problem}
+\medskip
+
 \noindent\textbf{How did you personally approach the problem?}
 \medskip
 
@@ -126,20 +114,20 @@ This document is a summary of Assignment 4 for CS 444 Operating Systems II at Or
 
 \noindent Our solution to the Sleeping Barber Problem was an implementation of the solution found in The Little Book of Semaphores by Allen B. Downey with some slight variations.\\
 We implemented a mutex that was used so customers could check how many customers were in the waiting room when they arrived. The problem required a MAX number of seats in the waiting room; so when this number was reached, an arriving customer left the store and did not receive a haircut.\\
-From there, we implemented 4 semaphores:
+From there we implemented 4 semaphores:
 \begin{itemize}
-\item 1 for the barber's chair to ensure only one customer thread was being serviced at a time.
-\item 1 semaphore was used to wake the barber and put him to sleep.
-\item Then we had a semaphore that had a value equal to the number of chairs available in the waiting room that was incremented as a customer arrived and decremented once they left.
-\item Our last semaphore was for the customer thread receiving a haircut to lock the thread until the barber thread was done ``cutting hair''.
+\item One for the barber's chair to ensure only one customer thread was being serviced at a time.
+\item One was used to wake the barber when the first customer came in and put him back to sleep when all customers left.
+\item One had a value equal to the number of chairs available in the waiting room that was incremented as a customer arrived and decremented when they left.
+\item One was for the customer thread receiving a haircut to lock the thread until the barber thread was done 'cutting hair'.
 \end{itemize}
 
-\bigskip
+\pagebreak
 
 \noindent\textbf{How did you ensure your solution was correct?}
 \medskip
 
-\noindent We used color coordinated printf statements for the consumer threads and barber thread to print out the logic of the problem. Each action performed by the threads was printed to the console in such a way that the user could follow all of the semaphore wait and posts and could understand what was happening throughout the program.\\
+\noindent We used color coordinated print statements for the consumer threads and barber thread to print out the logic of the problem. Each action performed by the threads was printed to the console in such a way that the user could follow all of the semaphore wait and posts and could understand what was happening at each step throughout the program execution.\\
 \medskip An example of our output is as follows:
 
 {\fontfamily{pcr}\selectfont
@@ -167,61 +155,99 @@ From there, we implemented 4 semaphores:
 \medskip
 
 \noindent We learned how to use semaphores with values other than 1 or 0 to lock critical sections after an arbitrary number of increments. In actuality, this program was of very similar fashion to the previous concurrency assignments and followed similar implementation schemes.
-\medskip
+
+\bigskip
 
 \subsection{Mutual Exclusion Problem}
+\medskip
+
 \noindent\textbf{How did you personally approach the problem?}
 \medskip
 
-\noindent For this problem, a mutually shared resources could be used by 3 threads at once, but no thread could begin using the resource until all three threads currently using were finished. To solve this problem, we used an is\_full flag to indicate that the resource was being used by 3 threads, and two int counters that counted the threads waiting for the resource and active threads using the resource. Our consumer thread function checks to see if there are three active threads using the resource and then sets a mutex to block the resource. As the threads finish their random consumption times, they decrement the active counter int and then release the mutex once all threads are finished.\\
+\noindent For this problem, a mutually shared resources could be used by up to 3 threads at once, but no subsequent thread could begin using the resource until all three threads currently using it were finished. To solve this problem we used an is\_full flag to indicate that the resource was being used by 3 threads, and two counters that marked how many threads were waiting for the resource and actively using the resource. Our consumer thread function checks to see if there are three active threads using the resource and then sets a mutex to block the resource. As the threads finish their random consumption times they decrement the active counter and then release the mutex once all threads are finished.\\
 
 \bigskip
 
 \noindent\textbf{How did you ensure your solution was correct?}
 \medskip
 
-\noindent We used a series of printf statements that followed the program logic and printed everything that was happening in the program. For example, when a thread began using the resource, when a thread was blocked out and waiting, when the resource was full, etc... This allowed us to ensure that the program was functioning as the assignment required and allowed us to demo the program and show the TA how it was working.\\ 
+\noindent We used a series of print statements that followed the program logic and printed everything that was happening in the program. For example, when a thread began using the resource, when a thread was blocked out and waiting, when the resource was full, etc. This allowed us to ensure that the program was functioning as the assignment required and allowed us to demo the program and show the TA how it was working.\\
 \bigskip
 
 \noindent\textbf{What did you learn?}
 \medskip
 
 \noindent We learned more about mutual exclusion of a shared resource in concurrent programming.
-\medskip
+
+\pagebreak
 
 \section{Version Control Log}
 \bigskip
 
 \noindent\begin{tabular}{l l l}\textbf{Detail} & \textbf{Author} & \textbf{Description}\\\hline
-\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/31d0e499089bc16ec0f1a8651c6579b882fe3837}{31d0e49} & ozarowib & HW2 preparation\\\hline
-\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/d76f94b4ef4e153d4a4082e754008b003cbcb8fc}{d76f94b} & Luke Morrison & luke's philosophers\\\hline
-\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/6ecb0b1be6e85c16b4d50d2c492c10fb3598a1d2}{6ecb0b1} & Luke Morrison & luke philosophers\\\hline
-\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/8fe1537eedfae5e846f6cb43d280fc8f716fc7d0}{8fe1537} & Luke Morrison & howto for changing scheduler\\\hline
-\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/1858a4b72e56d55cf51047d145d37da8924d0a95}{1858a4b} & DSchroederOSU & fixed concurrency\\\hline
-\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/fe2fee9cb7be6a8dc4f24a05b72d855ab6f14d2e}{fe2fee9} & DSchroederOSU & added tex and make\\\hline
-\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/f1cc0bee6c166599c52da86c7462076456200697}{f1cc0be} & Luke Morrison & cleanup + fix issues\\\hline
-\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/3b97f026eb869e0905fb8d1b09213294b9f629d6}{3b97f02} & Luke Morrison & test for IO scheduler\\\hline
-\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/a4abfb8d116f312257ec679de7d846a52eec9281}{a4abfb8} & Luke Morrison & added command line arguments\\\hline
-\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/b1e7d32a4b99257f3570ea84c4e2a08c60eb89e1}{b1e7d32} & DSchroederOSU & fixed concurrency\\\hline
-\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/df9f80af0d69e84ff3f2b052b8af192c2340c0d5}{df9f80a} & DSchroederOSU & tex file and concurrency work\\\hline
-\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/93ea155de2ddeeb5360af8ec1df1ad7b1b315a10}{93ea155} & DSchroederOSU & adding tex file\\\hline
-\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/2fdcd23f98fb16f5f5cc05d36e1e46708aaf2463}{2fdcd23} & DSchroederOSU & working on code in Latex file\\\hline
-\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/8df401398a214f996bbdd6e5ef42407e2f5d33b5}{8df4013} & ozarowib & conformed to class style\\\hline
-\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/38ad76e091720598addf73749757dffbc01ea642}{38ad76e} & DSchroederOSU & added code to tex file\\\hline
-\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/dc6e9301c617451dcba6073b38c9c5a406482b20}{dc6e930} & DSchroederOSU & Merge branch 'master' of https://github.com/DSchroederOSU/CS444-Group\_11\_05\\\hline\end{tabular}
-\bigskip
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/cc84d834483d472b0d0c12d075555c2c3b960755}{cc84d83} & ozarowib & hw4 prep\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/2f99621b3c19e6ce8239c9f4c1ea9f24902d77ee}{2f99621} & DSchroederOSU & barber\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/0574093f826e27b1fc4e3d216da50c503b3015ed}{0574093} & DSchroederOSU & Merge branch 'master' of https://github.com/DSchroederOSU/CS444-Group\_11\_05\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/1237ac17530a834d78a0d2a8d36924ec87a3c579}{1237ac1} & DSchroederOSU & barber\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/31e0b7f7cf642c37f6cf6d436193976ea4d80ca7}{31e0b7f} & DSchroederOSU & barber\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/47380f5ba2b7b07b547591b408d5e36e480b32ec}{47380f5} & DSchroederOSU & barber\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/dcf270e08f46f7452e14335b29c5a1e64e54f015}{dcf270e} & DSchroederOSU & barber\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/50cee86f1af5bc5267515775ee7cb5b64cf82418}{50cee86} & DSchroederOSU & barber\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/2a04f5e125dc1d66e320fa5629d28a75e41261cf}{2a04f5e} & DSchroederOSU & barber\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/fe320dd67de84fe204914ad796cb06ee25c01ac1}{fe320dd} & DSchroederOSU & barber\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/a75ef1d948f1b3ceca8ce1bd3142de6910918576}{a75ef1d} & DSchroederOSU & barber\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/38c69eb5be708dcb9530060fe04b4655e7d2469c}{38c69eb} & DSchroederOSU & barber\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/48c0fea3eacec6b8552b0ae4bcd6b80f2bbc47a5}{48c0fea} & DSchroederOSU & barber\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/68419befb7937985ce1dc57dc8bb7a10e8fcc1d0}{68419be} & DSchroederOSU & barber\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/864bfc842ef23344aa3636600f22b90a14c04573}{864bfc8} & DSchroederOSU & barber\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/ad9b77e77100b7124e9d4314828a4eef873398be}{ad9b77e} & Luke Morrison & tweaks to concurrency 4\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/bc77c3a810236b9a8be78840e56930c74f131920}{bc77c3a} & ozarowib & barber finished\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/544e1f42942086525b19b54c2c64767f93939780}{544e1f4} & DSchroederOSU & shared mutual exclusion\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/2b2fcc313fc02837b3ec59e4fddab9e322e84a70}{2b2fcc3} & DSchroederOSU & shared mutual exclusion\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/07a95df2df0de57520bdddf3378154cb95fa0e9d}{07a95df} & DSchroederOSU & shared mutual exclusion\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/dec8859b51c90d8a5963759bcc3737bb1d5334a7}{dec8859} & DSchroederOSU & shared mutual exclusion\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/450bd9879f23bf901c5cc0b152f00e3f5a81c891}{450bd98} & DSchroederOSU & as\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/f8b3fce9b6f9db28b855907294340004d34188a8}{f8b3fce} & DSchroederOSU & Merge branch 'master' of https://github.com/DSchroederOSU/CS444-Group\_11\_05\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/d7d831502768fd1af06529705a192d820382919c}{d7d8315} & DSchroederOSU & problem 1\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/a1786a728513098d904383b54fb414dbf1413e6e}{a1786a7} & DSchroederOSU & problem 1\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/e2ea41bdfe4023eac14583043839eabbce03876c}{e2ea41b} & DSchroederOSU & problem 1\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/330f0ba4b5d0d019425bd2d4a1b873791160375b}{330f0ba} & DSchroederOSU & problem 1\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/252e019b3dd0ffc47343228644947c08a34c87fa}{252e019} & DSchroederOSU & problem 1\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/5bfc574d7001e12ee9e38f94af6cf4060d922f89}{5bfc574} & DSchroederOSU & problem 1\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/187165fb52263e70d168f5b4ab7d6053b06c5ab1}{187165f} & DSchroederOSU & project a\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/7e7de2e46e1dc5ba56fb48175135b9da3a11fd56}{7e7de2e} & DSchroederOSU & project a\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/b9c76e60d132e01678f217dd7d75731153cd2789}{b9c76e6} & DSchroederOSU & project a\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/62f6636452f5e79fa406da9e36033a5aa5fa2fb2}{62f6636} & DSchroederOSU & project a\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/0b4f067ea9b3708cf1ee2262f26b6dbe3f6f186f}{0b4f067} & DSchroederOSU & project a\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/caf75e635f99088e9322ece621a5ac513ec54aee}{caf75e6} & DSchroederOSU & project a\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/c6fa079cc16d9bdf6042d21d120d646aa56e28fe}{c6fa079} & DSchroederOSU & project a\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/c31afe74c2a1630ff2d309da222c39bb39b28085}{c31afe7} & DSchroederOSU & project a\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/ca5f500f1667bfa17c33d79313a579c0ec6b2244}{ca5f500} & DSchroederOSU & project a\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/081195ab2514157e391d38dde60aa0a590ca4d25}{081195a} & DSchroederOSU & project a\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/fd3cf1f6984b4d2d8db99a1398706149b945a7f8}{fd3cf1f} & DSchroederOSU & project a\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/38b4e9fc809248abfbe6171bbe5acd7ec8ae9b97}{38b4e9f} & DSchroederOSU & project a\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/08698550c82847a01c3541f067be95e87277e65a}{0869855} & DSchroederOSU & project a\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/d66582cbd505b285e6a9bf385cb3e661c0dac2ee}{d66582c} & DSchroederOSU & project a\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/3e6ca02daac4d25b57286f456ed20a0198cd5d41}{3e6ca02} & DSchroederOSU & project a\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/802bacfe4421a997f13ec296d43903c8e05f8aed}{802bacf} & DSchroederOSU & project a\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/addccb2e0e7fea06f6c9de824f6b2aefc5abe16f}{addccb2} & DSchroederOSU & project a\\\hline
+\href{https://github.com/DSchroederOSU/CS444-Group\_11\_05/commit/a2ef71a6c16720d27666486aab80c0423d43e61a}{a2ef71a} & DSchroederOSU & project a\\\hline\end{tabular}
+\pagebreak
 
 \section{Work Log}
 \bigskip
 
 \begin{itemize}
-\item Brian copied noop-iosched.c to sstf-iosched.c in the /block directory
-\item Brian researched schedulers and elevator algorithms, started kernel assignment
-\item Group completed the concurrency program
-\item Luke wrote a python script for generating I/O to test new scheduling algorithm
-\item Daniel added .tex and Makefile to the project repository
-\item Group continued work and research on the kernel assignment
-\item Luke and Brian implemented final fixes in sstf-iosched.c
+\item Group began research on how slob.c works
+\item Daniel created initial barbder concurrency program
+\item Luke and Brian helped finish barber program
+\item Daniel wrote mutual exclusion concurrency program
+\item Brian began implementing best fit behavior in slob.c
+\item Luke wrote a program for testing slob memory allocation
+\item Group finished changes to slob
+\item Group researched how to make new system calls
+\item Brian implemented system calls to check slob fragmentation
+\item Group did final testing on slob behavior
 \item Group finished the assignment write-up in a Google Doc
 \item Brian transferred the content from the Google Doc write-up to the \LaTeX\ file
 \item Group pushed final changes to GitHub and prepared tarball for submission on TEACH
